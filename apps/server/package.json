@@ -1,0 +1,32 @@
+{
+  "name": "@openhand/server",
+  "version": "1.0.0",
+  "description": "OpenHand Web 服务端",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "echo \"(no server-specific tests yet)\""
+  },
+  "dependencies": {
+    "@openhand/core": "1.0.0",
+    "@openhand/sandbox": "1.0.0",
+    "@openhand/tools": "1.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ws": "^8.14.2",
+    "multer": "^1.4.5-lts.1",
+    "helmet": "^7.1.0",
+    "rate-limiter-flexible": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.16",
+    "@types/ws": "^8.5.10",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.10.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.3"
+  }
+}

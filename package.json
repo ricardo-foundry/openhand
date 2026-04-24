@@ -1,0 +1,35 @@
+{
+  "name": "openhand",
+  "version": "1.0.0",
+  "description": "🤖 OpenHand - 安全可控的 AI Agent 助手",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\" \"npm run dev:cli\"",
+    "dev:server": "cd apps/server && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:cli": "cd apps/cli && npm run dev",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "start": "cd apps/server && npm start"
+  },
+  "keywords": [
+    "ai-agent",
+    "automation",
+    "assistant",
+    "openai",
+    "claude",
+    "llm",
+    "productivity",
+    "open-source"
+  ],
+  "author": "OpenHand Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@openhand/sandbox",
+  "version": "1.0.0",
+  "description": "OpenHand 安全沙箱系统",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --import tsx --test tests/*.test.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}

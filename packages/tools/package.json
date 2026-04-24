@@ -1,0 +1,24 @@
+{
+  "name": "@openhand/tools",
+  "version": "1.0.0",
+  "description": "OpenHand 工具集合",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --import tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@openhand/core": "1.0.0",
+    "@openhand/sandbox": "1.0.0",
+    "nodemailer": "^6.9.7",
+    "puppeteer": "^21.6.1",
+    "cheerio": "^1.0.0-rc.12"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/nodemailer": "^6.4.14",
+    "typescript": "^5.3.3"
+  }
+}
