@@ -506,4 +506,28 @@ const safeConsole = {
   updateConfig(updates: Partial<SandboxConfig>): void {
     this.config = { ...this.config, ...updates };
   }
+
+  /**
+   * Return a read-only snapshot of the active sandbox policy.
+   *
+   * Meant for UI / status commands: surfaces the *effective* allow-lists and
+   * limits (not the raw constructor args) so callers can display what the
+   * sandbox will actually enforce. Arrays are frozen copies — callers cannot
+   * mutate them and accidentally widen the policy.
+   */
+  getPolicy(): {
+    allowedCommands: readonly string[];
+    allowedPaths: readonly string[];
+    timeoutMs: number;
+    memoryLimitMb: number;
+    networkEnabled: boolean;
+  } {
+    return Object.freeze({
+      allowedCommands: Object.freeze([...this.allowedCommands].sort()),
+      allowedPaths: Object.freeze([...this.resolvedAllowedPaths]),
+      timeoutMs: this.config.timeout,
+      memoryLimitMb: this.config.memoryLimit,
+      networkEnabled: this.config.networkEnabled,
+    });
+  }
 }

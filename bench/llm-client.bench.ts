@@ -72,13 +72,23 @@ const REQ: CompletionRequest = {
   messages: [{ role: 'user', content: 'hi' }],
 };
 
+/**
+ * ns/op guardrails vary wildly by CI runner (free-tier GitHub runners are
+ * ~3-5x slower than an M-series laptop). `OPENHAND_BENCH_MODE=ci` relaxes
+ * every bound; the default is the tight local bound so regressions on a dev
+ * machine still surface loudly.
+ */
+const BENCH_MODE = (process.env.OPENHAND_BENCH_MODE ?? 'local').toLowerCase();
+const IS_CI = BENCH_MODE === 'ci' || process.env.CI === 'true';
+const BOUND_TIGHT = IS_CI ? 2_000_000 : 500_000;
+const BOUND_LOOSE = IS_CI ? 4_000_000 : 1_000_000;
+
 test('LLMClient.complete passthrough has reasonable overhead', async () => {
   const client = new LLMClient({ provider: makeMockProvider() });
   const r = await bench('complete() idle', 2000, async () => {
     await client.complete(REQ);
   });
-  // Guardrail: should be well under 100k ns/op (0.1ms) on any reasonable CI.
-  assert.ok(r.nsPerOp < 500_000, `nsPerOp=${r.nsPerOp} is suspiciously high`);
+  assert.ok(r.nsPerOp < BOUND_TIGHT, `nsPerOp=${r.nsPerOp} > ${BOUND_TIGHT} (mode=${BENCH_MODE})`);
 });
 
 test('LLMClient.complete with retry policy (no failures) adds minimal cost', async () => {
@@ -89,7 +99,7 @@ test('LLMClient.complete with retry policy (no failures) adds minimal cost', asy
   const r = await bench('complete() + retry policy', 2000, async () => {
     await client.complete(REQ);
   });
-  assert.ok(r.nsPerOp < 500_000);
+  assert.ok(r.nsPerOp < BOUND_TIGHT);
 });
 
 test('LLMClient.stream passthrough', async () => {
@@ -97,7 +107,7 @@ test('LLMClient.stream passthrough', async () => {
   const r = await bench('stream() idle', 1000, async () => {
     for await (const _ of client.stream(REQ)) { /* drain */ }
   });
-  assert.ok(r.nsPerOp < 1_000_000);
+  assert.ok(r.nsPerOp < BOUND_LOOSE);
 });
 
 test('LLMClient with rate limit (far under cap) does not block', async () => {
@@ -108,5 +118,5 @@ test('LLMClient with rate limit (far under cap) does not block', async () => {
   const r = await bench('complete() + rate limit', 2000, async () => {
     await client.complete(REQ);
   });
-  assert.ok(r.nsPerOp < 500_000);
+  assert.ok(r.nsPerOp < BOUND_TIGHT);
 });

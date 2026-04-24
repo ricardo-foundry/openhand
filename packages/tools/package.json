@@ -12,13 +12,21 @@
   "dependencies": {
     "@openhand/core": "1.0.0",
     "@openhand/sandbox": "1.0.0",
-    "nodemailer": "^6.9.7",
-    "puppeteer": "^21.6.1",
     "cheerio": "^1.0.0-rc.12"
+  },
+  "peerDependencies": {
+    "playwright": "^1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "nodemailer": {
+      "optional": true
+    },
+    "playwright": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@types/nodemailer": "^6.4.14",
     "typescript": "^5.3.3"
   }
 }

@@ -2,7 +2,6 @@ import { Agent, AgentConfig, LLMConfig, Message, Task } from '@openhand/core';
 import { SecureSandbox } from '@openhand/sandbox';
 import { createTools } from '@openhand/tools';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import ora from 'ora';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -62,31 +61,6 @@ Always prioritize security and ask for confirmation before performing destructiv
 
     // 初始化 Agent
     await this.agent.initialize();
-  }
-
-  async startInteractiveChat(): Promise<void> {
-    console.log(chalk.cyan('\n🤖 OpenHand is ready! Type your message or "help" for commands.\n'));
-    console.log(chalk.gray('Commands: /quit, /exit, /clear, /tasks, /approve, /reject\n'));
-
-    while (true) {
-      const { message } = await inquirer.prompt([{
-        type: 'input',
-        name: 'message',
-        message: chalk.green('You'),
-        prefix: '>'
-      }]);
-
-      if (!message.trim()) continue;
-
-      // 处理特殊命令
-      if (message.startsWith('/')) {
-        const handled = await this.handleSlashCommand(message);
-        if (!handled) break;
-        continue;
-      }
-
-      await this.sendMessage(message);
-    }
   }
 
   async sendMessage(message: string): Promise<void> {

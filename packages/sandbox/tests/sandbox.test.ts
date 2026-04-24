@@ -92,3 +92,34 @@ test('execution timeout kills the child', async () => {
   assert.equal(result.success, false);
   assert.ok(elapsed < 5000, `should have timed out quickly, took ${elapsed}ms`);
 });
+
+test('getPolicy returns a frozen snapshot of the effective allow-lists', () => {
+  const root = path.join(os.tmpdir(), 'oh-policy-probe');
+  const sandbox = new SecureSandbox({
+    allowedPaths: [root],
+    allowedCommands: ['ls', 'echo'],
+    timeout: 7_500,
+    memoryLimit: 42,
+  });
+  const p = sandbox.getPolicy();
+
+  assert.deepEqual([...p.allowedCommands], ['echo', 'ls']);
+  assert.equal(p.allowedPaths.length, 1);
+  assert.equal(p.timeoutMs, 7_500);
+  assert.equal(p.memoryLimitMb, 42);
+  assert.equal(p.networkEnabled, false);
+  // Snapshot must not allow a caller to mutate allow-lists after the fact.
+  assert.ok(Object.isFrozen(p));
+  assert.ok(Object.isFrozen(p.allowedCommands));
+  assert.ok(Object.isFrozen(p.allowedPaths));
+});
+
+test('getPolicy falls back to the default command allowlist', () => {
+  const sandbox = new SecureSandbox({ allowedPaths: [os.tmpdir()] });
+  const p = sandbox.getPolicy();
+  assert.ok(p.allowedCommands.includes('ls'));
+  assert.ok(p.allowedCommands.includes('cat'));
+  // Must NOT include shells / code-eval binaries.
+  assert.ok(!p.allowedCommands.includes('bash'));
+  assert.ok(!p.allowedCommands.includes('node'));
+});

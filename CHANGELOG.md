@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-25
+
+### Added
+
+- `SecureSandbox.getPolicy()` — returns a frozen snapshot of the effective
+  allow-lists + limits. `openhand status` now consumes the real policy
+  instead of the hard-coded strings it used to print.
+- `examples/agent-shell-loop.ts` — a minimal chat → decide → exec →
+  observe loop that runs offline against `MockProvider` and shells out
+  through the sandbox. Doubles as a smoke test of the full pipeline.
+- `scripts/generate-demo.sh` — regenerates `docs/demo-transcript.md`
+  from a real offline run of `hello-world`, `agent-shell-loop`, and
+  `shell-automation`. CI can diff the regen output against the committed
+  file to catch silent drift.
+- `docs/demo-transcript.md` — 98-line recorded transcript, checked in.
+- `docs/RELEASE_v0.5.md` — overview of rounds 1-7.
+- `docs/REPO_SETTINGS.md` — reference config for GitHub repo metadata.
+- `docs/GOOD_FIRST_ISSUES.md` — 12 candidate good-first-issues.
+- `OPENHAND_BENCH_MODE=ci` (and `CI=true`) now relaxes the bench ops/sec
+  lower bounds by 4x so shared CI runners don't fail spuriously.
+
+### Changed
+
+- **Security**: dropped the unused `puppeteer` runtime dependency and
+  moved `nodemailer` to an optional `peerDependency`. `npm audit` now
+  reports **0 vulnerabilities** (down from 16 high/critical in 0.4).
+- `uuid` bumped to `^14.0.0` (core), `vite` to `^7.0.0` (web) —
+  clears the remaining transitive advisories.
+- `apps/cli/src/index.ts` default (no-args) entry now goes through the
+  same `chatCommand` → `runRepl` path as `openhand chat`. The legacy
+  inquirer-backed `startInteractiveChat` branch is gone.
+- `PluginLoader.watch()` retry is now a capped exponential backoff
+  (5 attempts, 100ms → 1.6s), and it emits new `retry-scheduled` /
+  `retry-recovered` events with attempt counts so operators can see
+  what's going on.
+- `tsx` moved into the root `devDependencies` so `npm run test:e2e` and
+  `npm run bench` work out of the box after `npm install`.
+
+### Removed
+
+- `packages/tools` no longer depends on `puppeteer`; the existing
+  browser tools already used `fetch` + `cheerio`, so nothing on the
+  user-facing API changed.
+- `packages/tools` no longer depends on `nodemailer` as a direct
+  runtime dep; it's listed under `peerDependenciesMeta` as optional
+  for future real-email support.
+
 ## [0.4.0] - 2026-04-25
 
 ### Added

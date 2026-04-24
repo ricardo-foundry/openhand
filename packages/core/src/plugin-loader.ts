@@ -78,6 +78,8 @@ export type PluginLoaderEvent =
   | { type: 'unloaded'; id: string }
   | { type: 'enabled'; id: string }
   | { type: 'disabled'; id: string }
+  | { type: 'retry-scheduled'; id: string; attempt: number; delayMs: number; cause: string }
+  | { type: 'retry-recovered'; id: string; attempts: number }
   | { type: 'error'; id?: string; error: Error };
 
 /**
@@ -225,6 +227,13 @@ export class PluginLoader extends EventEmitter {
     // Track in-progress retries so we don't pile up on noisy fs.watch events.
     const retrying = new Set<string>();
 
+    // Capped exponential backoff: editors + npm-install can emit bursts of
+    // events while files are half-written. We retry a bounded number of
+    // times (MAX_ATTEMPTS) with growing delay, then give up loudly so the
+    // user actually sees the underlying failure in logs.
+    const MAX_ATTEMPTS = 5;
+    const BASE_RETRY_MS = 100;
+
     const tryLoad = (dirname: string, attempt: number): void => {
       const dir = path.join(this.pluginsDir, dirname);
       if (!fs.existsSync(dir)) {
@@ -235,23 +244,42 @@ export class PluginLoader extends EventEmitter {
       }
       try {
         this.loadFromDir(dir);
+        if (attempt > 0) {
+          // Useful signal that the retry dance actually recovered.
+          this.emitSafe({
+            type: 'retry-recovered',
+            id: dirname,
+            attempts: attempt + 1,
+          });
+        }
       } catch (error) {
-        // editors / `npm install` / git checkout often emit watch events
-        // before package.json or the entry file is fully on disk. Give it
-        // one 100ms retry before surfacing as an error.
-        if (attempt === 0 && !retrying.has(dirname)) {
+        if (attempt < MAX_ATTEMPTS && !retrying.has(dirname)) {
           retrying.add(dirname);
+          const delay = BASE_RETRY_MS * Math.pow(2, attempt);
+          this.emitSafe({
+            type: 'retry-scheduled',
+            id: dirname,
+            attempt: attempt + 1,
+            delayMs: delay,
+            cause: error instanceof Error ? error.message : String(error),
+          });
           const t = setTimeout(() => {
             retrying.delete(dirname);
-            tryLoad(dirname, 1);
-          }, 100);
+            tryLoad(dirname, attempt + 1);
+          }, delay);
           t.unref?.();
           return;
         }
+        // Exhausted — surface the final error with attempt count so the
+        // operator can distinguish "transient" from "broken plugin".
         this.emitSafe({
           type: 'error',
           id: dirname,
-          error: error instanceof Error ? error : new Error(String(error)),
+          error: error instanceof Error
+            ? new Error(
+                `plugin "${dirname}" failed to load after ${attempt + 1} attempt(s): ${error.message}`,
+              )
+            : new Error(String(error)),
         });
       }
     };

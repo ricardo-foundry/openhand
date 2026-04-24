@@ -1,6 +1,6 @@
 {
   "name": "openhand",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "🤖 OpenHand - 安全可控的 AI Agent 助手",
   "private": true,
   "workspaces": [
@@ -36,6 +36,7 @@
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "tsx": "^4.7.0",
     "typedoc": "^0.28.19",
     "typescript": "^5.3.3"
   }

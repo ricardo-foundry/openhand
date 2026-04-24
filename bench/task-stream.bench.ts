@@ -37,12 +37,20 @@ function bench(label: string, iters: number, fn: () => void): { opsPerSec: numbe
   return { opsPerSec, nsPerOp };
 }
 
+// `OPENHAND_BENCH_MODE=ci` (or $CI=true) divides every ops/sec lower bound
+// by 4 so shared CI runners don't fail spuriously while local dev keeps the
+// tight bound.
+const IS_CI =
+  (process.env.OPENHAND_BENCH_MODE ?? '').toLowerCase() === 'ci' ||
+  process.env.CI === 'true';
+const OPS_SCALE = IS_CI ? 0.25 : 1;
+
 test('TaskStreamBus.publish() with no subscribers', () => {
   const bus = new TaskStreamBus({ historyLimit: 1000 });
   const r = bench('publish() no subs', 50_000, () => {
     bus.publish({ taskId: 't1', status: 'running', message: 'ok' });
   });
-  assert.ok(r.opsPerSec > 10_000, `too slow: ${r.opsPerSec} ops/s`);
+  assert.ok(r.opsPerSec > 10_000 * OPS_SCALE, `too slow: ${r.opsPerSec} ops/s`);
 });
 
 test('TaskStreamBus.publish() with 10 subscribers', () => {
@@ -53,7 +61,7 @@ test('TaskStreamBus.publish() with 10 subscribers', () => {
     bus.publish({ taskId: 't1', status: 'running' });
   });
   assert.ok(sink > 0, 'subscribers ran');
-  assert.ok(r.opsPerSec > 5_000, `too slow: ${r.opsPerSec} ops/s`);
+  assert.ok(r.opsPerSec > 5_000 * OPS_SCALE, `too slow: ${r.opsPerSec} ops/s`);
 });
 
 test('formatSseFrame() throughput', () => {
@@ -68,7 +76,7 @@ test('formatSseFrame() throughput', () => {
   const r = bench('formatSseFrame()', 100_000, () => {
     formatSseFrame(evt);
   });
-  assert.ok(r.opsPerSec > 50_000, `too slow: ${r.opsPerSec} ops/s`);
+  assert.ok(r.opsPerSec > 50_000 * OPS_SCALE, `too slow: ${r.opsPerSec} ops/s`);
 });
 
 test('TaskStreamBus ring-buffer eviction stays bounded', () => {

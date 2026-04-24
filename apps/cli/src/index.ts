@@ -3,7 +3,9 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import boxen from 'boxen';
+import * as os from 'os';
 import { PluginLoader } from '@openhand/core';
+import { SecureSandbox } from '@openhand/sandbox';
 import { OpenHandCLI } from './cli';
 import { configCommand } from './commands/config';
 import { chatCommand } from './commands/chat';
@@ -28,7 +30,7 @@ const logo = `
 
 console.log(chalk.cyan(logo));
 console.log(boxen(
-  chalk.white('🤖 OpenHand CLI v1.0.0') + '\n' +
+  chalk.white('🤖 OpenHand CLI v0.5.0') + '\n' +
   chalk.gray('Your secure AI assistant in the terminal'),
   {
     padding: 1,
@@ -53,23 +55,15 @@ program
       'Docs: https://github.com/Ricardo-M-L/openhand',
     ].join('\n'),
   )
-  .version('1.0.0');
+  .version('0.5.0');
 
-// Chat command
+// Chat command — delegates to chatCommand (which uses the zero-dep runRepl).
 program
   .command('chat')
   .description('Start an interactive REPL. Type `/help` inside for slash commands.')
   .option('-m, --message <message>', 'Send a single message and exit (non-interactive)')
   .action(async (options) => {
-    const cli = new OpenHandCLI();
-    await cli.initialize();
-
-    if (options.message) {
-      await cli.sendMessage(options.message);
-      process.exit(0);
-    } else {
-      await cli.startInteractiveChat();
-    }
+    await chatCommand(options);
   });
 
 // Config command
@@ -135,13 +129,22 @@ program
       toolCount: (p.module.tools ?? []).length,
       ...(p.manifest.permissions !== undefined ? { permissions: p.manifest.permissions } : {}),
     }));
+    // Build a live sandbox with the same defaults `OpenHandCLI` uses, then
+    // ask it for its real policy — no more hard-coded strings here, so the
+    // output reflects what the sandbox would actually enforce.
+    const sandbox = new SecureSandbox({
+      timeout: 30_000,
+      memoryLimit: 256,
+      allowedPaths: [process.cwd(), os.homedir()],
+    });
+    const policy = sandbox.getPolicy();
     const out = renderStatus({
       config,
       sandbox: {
-        allowedCommands: ['ls', 'cat', 'git', 'npm', 'node'],
-        allowedPaths: [process.cwd()],
-        timeoutMs: 30_000,
-        memoryLimitMb: 256,
+        allowedCommands: policy.allowedCommands,
+        allowedPaths: policy.allowedPaths,
+        timeoutMs: policy.timeoutMs,
+        memoryLimitMb: policy.memoryLimitMb,
       },
       plugins,
     });
@@ -199,12 +202,11 @@ program
     process.exit(0);
   });
 
-// Default: interactive mode
+// Default: drop the user straight into the same REPL `openhand chat` uses.
+// Keeps one code path — no more legacy inquirer-based startInteractiveChat.
 if (process.argv.length === 2) {
   (async () => {
-    const cli = new OpenHandCLI();
-    await cli.initialize();
-    await cli.startInteractiveChat();
+    await chatCommand({});
   })();
 } else {
   program.parse();

@@ -19,7 +19,8 @@
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Monorepo](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Tests](https://img.shields.io/badge/tests-121%20unit%20%2B%206%20e2e-success.svg)](./CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-140%20unit%20%2B%206%20e2e-success.svg)](./CHANGELOG.md)
+[![npm audit](https://img.shields.io/badge/npm%20audit-0%20vulns-success.svg)](./docs/RELEASE_v0.5.md)
 [![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
 [![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/Ricardo-M-L/openhand/issues)
 
@@ -39,29 +40,42 @@ in a weekend.
 
 | Axis | Status |
 | --- | --- |
-| Unit tests | **121** (`npm run test:unit`) |
+| Unit tests | **140** (`npm run test:unit`) |
 | End-to-end tests | **6** (`npm run test:e2e`) — SSE flow, CLI REPL, plugin hot-reload |
 | Micro-benchmarks | **10** (`npm run bench`) — LLMClient, plugin loader, SSE ring buffer |
 | TypeScript | **`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride`** across every workspace, `tsc --noEmit` clean |
-| Dependencies in core runtime | **5** (`eventemitter3`, `uuid`, `express`, `cors`, `helmet`). No SDKs. |
+| Dependencies in core runtime | **4** (`eventemitter3`, `uuid`, `express`, `cors`). Zero SDK deps. |
+| `npm audit` | **0 vulnerabilities** (as of v0.5) |
 | Error policy | [`docs/ERROR_HANDLING.md`](./docs/ERROR_HANDLING.md) — four categories, explicit retry rules |
-| Sandbox tests | 29 (policy + sandbox), covering shell-metachar injection, `-c` interpreter flags, path traversal |
+| Sandbox tests | 31 (policy + sandbox), covering shell-metachar injection, `-c` interpreter flags, path traversal, policy getter |
 
 Run everything with a single `npm test` from the root.
 
 ---
 
-## ▶ 5-minute Quickstart
+## ▶ 60-second Quickstart (zero setup)
 
 ```bash
 git clone https://github.com/Ricardo-M-L/openhand.git && cd openhand
-npm install && npm run build
-LLM_PROVIDER=ollama LLM_MODEL=qwen2.5:0.5b npx tsx examples/hello-world.ts
+npm install
+npx tsx examples/hello-world.ts
 ```
 
-That's it — three commands and you have a real agent talking to a local
-Ollama daemon. No API key, no signup. Drop `LLM_PROVIDER=openai` (with
-`OPENAI_API_KEY=...`) or `=anthropic` and the same code works.
+That's it — three commands. Defaults to `MockProvider`, so **no API key,
+no Docker, no Ollama** is required. You'll see a canned reply that proves
+the whole pipeline (client → provider → response → usage) works end-to-end.
+
+Want a real backend? Set `LLM_PROVIDER`:
+
+```bash
+LLM_PROVIDER=ollama LLM_MODEL=qwen2.5:0.5b npx tsx examples/hello-world.ts
+LLM_PROVIDER=openai OPENAI_API_KEY=sk-... npx tsx examples/hello-world.ts
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-... npx tsx examples/hello-world.ts
+```
+
+All three use the exact same code path. See
+[`docs/demo-transcript.md`](./docs/demo-transcript.md) for a recorded
+zero-setup run.
 
 | I want to…                                  | Read this                                                       |
 |---------------------------------------------|------------------------------------------------------------------|
@@ -70,6 +84,8 @@ Ollama daemon. No API key, no signup. Drop `LLM_PROVIDER=openai` (with
 | Use my own LLM (vLLM / LM Studio / Bedrock) | [`cookbook/03-custom-llm-provider.md`](./cookbook/03-custom-llm-provider.md) |
 | Confirm the sandbox actually denies things  | [`cookbook/04-sandboxed-shell.md`](./cookbook/04-sandboxed-shell.md) |
 | Stream task events into a React app         | [`cookbook/05-streaming-ui.md`](./cookbook/05-streaming-ui.md)   |
+| See a mini agent loop (chat → exec → observe) | [`examples/agent-shell-loop.ts`](./examples/agent-shell-loop.ts) |
+| Read a full recorded transcript             | [`docs/demo-transcript.md`](./docs/demo-transcript.md)           |
 | Read every recipe                           | [`cookbook/README.md`](./cookbook/README.md)                     |
 
 ---
