@@ -15,10 +15,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/Ricardo-M-L/openhand/ci.yml?label=CI&logo=githubactions&logoColor=white)](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript Strict](https://img.shields.io/badge/TS-strict%20%2B%20noUncheckedIndexedAccess-blue.svg?logo=typescript&logoColor=white)](./docs/ERROR_HANDLING.md)
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Monorepo](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Tests](https://img.shields.io/badge/tests-121%20passing-success.svg)](./CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-121%20unit%20%2B%206%20e2e-success.svg)](./CHANGELOG.md)
+[![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
 [![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/Ricardo-M-L/openhand/issues)
 
 [![Stars over time](https://starchart.cc/Ricardo-M-L/openhand.svg?variant=adaptive)](https://starchart.cc/Ricardo-M-L/openhand)
@@ -30,6 +32,22 @@ interface, an audited tool layer, a sandbox you can trust with `shell_exec`,
 and a plugin system that stays out of core's way. No vendor SDKs, no meta-
 framework — just enough framework that you can read the whole `packages/core`
 in a weekend.
+
+---
+
+## At a glance
+
+| Axis | Status |
+| --- | --- |
+| Unit tests | **121** (`npm run test:unit`) |
+| End-to-end tests | **6** (`npm run test:e2e`) — SSE flow, CLI REPL, plugin hot-reload |
+| Micro-benchmarks | **10** (`npm run bench`) — LLMClient, plugin loader, SSE ring buffer |
+| TypeScript | **`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride`** across every workspace, `tsc --noEmit` clean |
+| Dependencies in core runtime | **5** (`eventemitter3`, `uuid`, `express`, `cors`, `helmet`). No SDKs. |
+| Error policy | [`docs/ERROR_HANDLING.md`](./docs/ERROR_HANDLING.md) — four categories, explicit retry rules |
+| Sandbox tests | 29 (policy + sandbox), covering shell-metachar injection, `-c` interpreter flags, path traversal |
+
+Run everything with a single `npm test` from the root.
 
 ---
 
@@ -154,8 +172,9 @@ boundary rules.
 - **Live web task stream** — `GET /api/tasks/:id/stream` is a real SSE
   feed with `Last-Event-ID` resume and a per-task ring buffer.
 - **Monorepo with npm workspaces** — `packages/{core,tools,sandbox,llm}`
-  and `apps/{cli,server,web}`, each independently testable. **121 tests**
-  across six workspaces.
+  and `apps/{cli,server,web}`, each independently testable. **121 unit tests
+  + 6 E2E + 10 benchmarks** across seven workspaces, all under strict
+  TypeScript.
 
 ---
 
@@ -269,10 +288,39 @@ Full guide: [`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md) and
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — modules, data flow, diagrams.
 - [`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md) — ship a plugin in 10 minutes.
 - [`docs/SECURITY_MODEL.md`](./docs/SECURITY_MODEL.md) — sandbox, policy, approvals.
+- [`docs/ERROR_HANDLING.md`](./docs/ERROR_HANDLING.md) — error categories, retry rules, log levels.
+- [`bench/README.md`](./bench/README.md) — micro-benchmarks and how to interpret them.
 - [`landing/README.md`](./landing/README.md) — GitHub Pages source.
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — dev setup, tests, PR flow.
 - [`SECURITY.md`](./SECURITY.md) — how to report a vulnerability.
 - [`CHANGELOG.md`](./CHANGELOG.md) — what shipped in each release.
+
+---
+
+## Roadmap
+
+Shipped:
+
+- [x] **v0.1** — monorepo scaffold, sandbox policy, core agent loop.
+- [x] **v0.2** — real LLM providers (OpenAI / Anthropic / Ollama), plugin
+      hot-reload, CLI REPL with persisted config, SSE task stream.
+- [x] **v0.2.1** — cookbook, runnable examples, GitHub Pages landing, JSDoc
+      on every public export.
+- [x] **v0.3** — **strictest possible TypeScript** (`noUncheckedIndexedAccess`,
+      `exactOptionalPropertyTypes`, `noImplicitOverride`) across every
+      workspace, end-to-end tests, micro-benchmarks, documented error policy.
+
+Next:
+
+- [ ] **v0.4** — provider: Bedrock (via IAM, no API key). Streaming
+      tool-calls across all providers. Per-session cost budgets.
+- [ ] **v0.5** — multi-agent orchestration (`Agent.delegate(subagent, task)`),
+      shared memory store.
+- [ ] **v0.6** — web UI: live policy editor, approval inbox, cost dashboard.
+- [ ] **v1.0** — semver commitments, stable plugin API, published
+      `@openhand/*` packages on npm.
+
+Propose or grab something via [good-first-issue](https://github.com/Ricardo-M-L/openhand/labels/good%20first%20issue).
 
 ---
 

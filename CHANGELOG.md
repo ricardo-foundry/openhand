@@ -7,6 +7,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-25
+
+### Added
+
+- **Strictest TypeScript across every workspace.** `tsconfig.json` in
+  `packages/{core,llm,sandbox,tools}` and `apps/{cli,server,web}` all now
+  enforce `strict` plus `noUncheckedIndexedAccess`,
+  `exactOptionalPropertyTypes`, `noImplicitOverride`, and
+  `noFallthroughCasesInSwitch`. `tsc --noEmit` is clean on every
+  workspace.
+- `tests/e2e/`: three end-to-end smoke tests (6 cases total) using
+  `node:test` + raw `http` — no Playwright, no Jest, no new deps:
+  - `sse-flow.test.ts`: boots a real Express server and verifies the SSE
+    stream emits a `completed` frame for both live and resume scenarios.
+  - `cli-repl.test.ts`: drives `runRepl` with scripted stdin/stdout to
+    exercise `/help`, `/model`, `/save`, `/exit`, and error propagation.
+  - `plugin-hot-reload.test.ts`: watches an empty plugins dir, drops a
+    new plugin in, and asserts the loader emits `loaded`.
+- `bench/`: three micro-benchmarks (10 cases total) for the perf-sensitive
+  paths (`LLMClient` overhead, `PluginLoader.loadAll` at 100 plugins, SSE
+  ring buffer throughput). Each bench is also a test — it asserts basic
+  order-of-magnitude thresholds so regressions fail CI rather than just
+  drift numbers. `bench/README.md` documents how to read the output.
+- `docs/ERROR_HANDLING.md`: four-category taxonomy (`UserError` /
+  `ProviderError` / `SandboxError` / `InternalError`) with explicit
+  retry rules, user-visibility guidance, and log-level conventions.
+- `packages/core/src/types.ts`: `Tool.cleanup?` hook, invoked from
+  `Agent.executeTask` in a `finally` block. Tools that own sockets, temp
+  files, or browser tabs can now release them even when `execute` throws
+  or the task is cancelled.
+- Root `package.json` scripts: `test:unit`, `test:e2e`, `bench`,
+  `typecheck`. `test` now runs unit + e2e + benchmarks.
+- README: `At a glance` table (total test/bench counts, strict-TS badge),
+  `Roadmap` with shipped + next milestones, `TS strict` badge in the
+  header row.
+
+### Fixed
+
+- **Sandbox kill-signal race** (`packages/sandbox/src/sandbox.ts`):
+  `runInSandbox` now guards against double-settle, clears the hard-kill
+  timer on normal exit (so we no longer leak a 5-second handle on every
+  timed-out command), and only fires `SIGKILL` if the child is still
+  alive. Uncovered while tightening types — the old code would fire
+  `SIGKILL` on an already-exited process in a rare race.
+- **SSE subscription leak** (`apps/server/src/routes.ts`): the task-stream
+  SSE route now runs its cleanup exactly once (`cleaned` flag) and also
+  unsubscribes proactively when `res.write` throws mid-stream. Previously
+  the ring-buffer's listener list could grow by one entry per disconnected
+  client if the socket died between the heartbeat ticks.
+- **REPL `SIGINT` leaves zombie config** (`apps/cli/src/repl.ts`): ctrl+c
+  now stops any running spinner, best-effort persists the current config,
+  and removes the handler before exit. Previously a `/model` change
+  made mid-session was lost if the user ctrl+c'd before `/save`.
+- `packages/llm/src/{openai,ollama,anthropic}.ts`: response construction
+  now conditionally sets optional fields (`toolCalls`, `usage`) instead
+  of assigning `undefined`, which `exactOptionalPropertyTypes: true`
+  correctly rejects. Same pattern in `LLMError` for `status`.
+- `packages/llm/src/registry.ts`: `resolveProvider` now builds provider
+  options with conditional spreads (`...(env.X !== undefined ? {…} : {})`)
+  so an unset env variable becomes "key omitted" rather than
+  "key is undefined" — required by `exactOptionalPropertyTypes`.
+- `packages/tools/src/file/index.ts`: regex capture groups now default to
+  empty string when undefined, surfaced by
+  `noUncheckedIndexedAccess`. No behaviour change for matching input, but
+  the type is now honest.
+
+### Changed
+
+- `apps/server/src/routes.ts`: all `req.params.X` accesses now default to
+  `''` instead of destructuring (`const { taskId } = req.params` would
+  have inferred `string | undefined` under
+  `noUncheckedIndexedAccess`). Behaviourally equivalent — Express
+  guarantees the param is present when the route matches — but the types
+  no longer lie.
+- `apps/cli/src/cli.ts`: slash-command split now tolerates empty input
+  (`parts[0] ?? ''`).
+
+### Tests
+
+- **121 unit tests** across six packages — all still green after the
+  strict-mode migration.
+- **6 E2E tests** under `tests/e2e/` — runnable via `npm run test:e2e`.
+- **10 benchmarks** under `bench/` — runnable via `npm run bench`.
+- All tests and benchmarks pass on Node 20 macOS/Linux.
+
 ## [0.2.0] - 2026-04-25
 
 ### Added

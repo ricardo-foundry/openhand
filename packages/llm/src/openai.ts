@@ -79,20 +79,23 @@ export class OpenAIProvider implements LLMProvider {
     const message = choice.message ?? {};
     const toolCalls = this.parseToolCalls(message.tool_calls);
 
-    return {
+    const response: CompletionResponse = {
       id: String(res.id ?? ''),
       model: String(res.model ?? request.model),
       content: typeof message.content === 'string' ? message.content : '',
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       finishReason: this.mapFinishReason(choice.finish_reason),
-      usage: res.usage
-        ? {
-            promptTokens: Number(res.usage.prompt_tokens ?? 0),
-            completionTokens: Number(res.usage.completion_tokens ?? 0),
-            totalTokens: Number(res.usage.total_tokens ?? 0),
-          }
-        : undefined,
     };
+    if (toolCalls.length > 0) {
+      response.toolCalls = toolCalls;
+    }
+    if (res.usage) {
+      response.usage = {
+        promptTokens: Number(res.usage.prompt_tokens ?? 0),
+        completionTokens: Number(res.usage.completion_tokens ?? 0),
+        totalTokens: Number(res.usage.total_tokens ?? 0),
+      };
+    }
+    return response;
   }
 
   async *stream(request: CompletionRequest): AsyncIterable<StreamChunk> {
@@ -127,17 +130,20 @@ export class OpenAIProvider implements LLMProvider {
       const choice = obj?.choices?.[0];
       const delta = choice?.delta?.content ?? '';
       const finishRaw = choice?.finish_reason;
-      yield {
+      const chunk: StreamChunk = {
         delta: typeof delta === 'string' ? delta : '',
-        finishReason: finishRaw ? this.mapFinishReason(finishRaw) : undefined,
-        usage: obj.usage
-          ? {
-              promptTokens: Number(obj.usage.prompt_tokens ?? 0),
-              completionTokens: Number(obj.usage.completion_tokens ?? 0),
-              totalTokens: Number(obj.usage.total_tokens ?? 0),
-            }
-          : undefined,
       };
+      if (finishRaw) {
+        chunk.finishReason = this.mapFinishReason(finishRaw);
+      }
+      if (obj.usage) {
+        chunk.usage = {
+          promptTokens: Number(obj.usage.prompt_tokens ?? 0),
+          completionTokens: Number(obj.usage.completion_tokens ?? 0),
+          totalTokens: Number(obj.usage.total_tokens ?? 0),
+        };
+      }
+      yield chunk;
     }
   }
 

@@ -89,6 +89,8 @@ export class LLMError extends Error {
     this.name = 'LLMError';
     this.code = params.code;
     this.provider = params.provider;
-    this.status = params.status;
+    if (params.status !== undefined) {
+      this.status = params.status;
+    }
   }
 }

@@ -147,9 +147,9 @@ export function createFileTools(sandbox: SecureSandbox): Tool[] {
             const match = line.match(/^(.+?):(\d+):(.*)$/);
             if (match) {
               return {
-                file: match[1],
-                line: parseInt(match[2], 10),
-                content: match[3],
+                file: match[1] ?? '',
+                line: parseInt(match[2] ?? '0', 10),
+                content: match[3] ?? '',
               };
             }
             return null;

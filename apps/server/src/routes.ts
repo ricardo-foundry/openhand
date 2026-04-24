@@ -22,7 +22,7 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
   // backlog still in the ring buffer. Clients may resume after reconnect by
   // sending `Last-Event-ID` (the browser sets this automatically for EventSource).
   app.get('/api/tasks/:taskId/stream', (req: Request, res: Response) => {
-    const { taskId } = req.params;
+    const taskId = req.params.taskId ?? '';
     const lastEventIdHeader = req.headers['last-event-id'];
     const sinceId = typeof lastEventIdHeader === 'string'
       ? Number.parseInt(lastEventIdHeader, 10)
@@ -48,30 +48,47 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
       res.write(formatSseFrame(evt));
     }
 
-    const unsubscribe = globalTaskStream.subscribe(taskId, evt => {
-      res.write(formatSseFrame(evt));
+    // Track cleanup state so every exit path (client close, write error,
+    // terminal event) runs exactly once and we never leak the subscription
+    // handler or the heartbeat timer into the ring buffer's listener list.
+    let cleaned = false;
+    let heartbeat: NodeJS.Timeout | undefined;
+    let unsubscribe: () => void = () => {};
+    const cleanup = (): void => {
+      if (cleaned) return;
+      cleaned = true;
+      if (heartbeat) clearInterval(heartbeat);
+      unsubscribe();
+    };
+
+    unsubscribe = globalTaskStream.subscribe(taskId, evt => {
+      try {
+        res.write(formatSseFrame(evt));
+      } catch {
+        // Socket gone — tear down immediately rather than waiting for
+        // the next heartbeat to notice.
+        cleanup();
+        return;
+      }
       // If the task is done, close the stream politely.
       if (evt.status === 'completed' || evt.status === 'failed') {
         setTimeout(() => {
+          cleanup();
           try { res.end(); } catch { /* already closed */ }
         }, 50);
       }
     });
 
     // Heartbeat every 15s so intermediate proxies don't time out the socket.
-    const heartbeat = setInterval(() => {
+    heartbeat = setInterval(() => {
       try {
         res.write(`: ping ${Date.now()}\n\n`);
       } catch {
-        /* client gone */
+        cleanup();
       }
     }, 15_000);
     heartbeat.unref?.();
 
-    const cleanup = (): void => {
-      clearInterval(heartbeat);
-      unsubscribe();
-    };
     req.on('close', cleanup);
     req.on('error', cleanup);
   });
@@ -80,7 +97,7 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
   // to render without a real LLM roundtrip. Intentionally not documented
   // in the public OpenAPI — gated by query param so curl tests can use it.
   app.post('/api/tasks/:taskId/_demo', (req: Request, res: Response) => {
-    const { taskId } = req.params;
+    const taskId = req.params.taskId ?? '';
     const statuses: TaskStatus[] = ['pending', 'running', 'running', 'completed'];
     statuses.forEach((status, i) => {
       setTimeout(() => {
@@ -133,7 +150,7 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
 
   // Get agent
   app.get('/api/agents/:agentId', (req: Request, res: Response) => {
-    const { agentId } = req.params;
+    const agentId = req.params.agentId ?? '';
     const instance = agentManager.getAgent(agentId);
     
     if (!instance) {
@@ -150,7 +167,7 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
 
   // Delete agent
   app.delete('/api/agents/:agentId', async (req: Request, res: Response) => {
-    const { agentId } = req.params;
+    const agentId = req.params.agentId ?? '';
     const success = await agentManager.removeAgent(agentId);
     
     if (!success) {
@@ -164,7 +181,7 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
   // Send message
   app.post('/api/agents/:agentId/chat', async (req: Request, res: Response) => {
     try {
-      const { agentId } = req.params;
+      const agentId = req.params.agentId ?? '';
       const { sessionId, message } = req.body;
       
       if (!message) {
@@ -189,7 +206,8 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
 
   // Get session
   app.get('/api/agents/:agentId/sessions/:sessionId', (req: Request, res: Response) => {
-    const { agentId, sessionId } = req.params;
+    const agentId = req.params.agentId ?? '';
+    const sessionId = req.params.sessionId ?? '';
     const session = agentManager.getSession(agentId, sessionId);
     
     if (!session) {
@@ -203,7 +221,8 @@ export function setupRoutes(app: Router, agentManager: AgentManager) {
   // Approve/Reject task
   app.post('/api/agents/:agentId/tasks/:taskId/approve', async (req: Request, res: Response) => {
     try {
-      const { agentId, taskId } = req.params;
+      const agentId = req.params.agentId ?? '';
+      const taskId = req.params.taskId ?? '';
       const { approved } = req.body;
       
       await agentManager.approveTask(agentId, taskId, approved !== false);

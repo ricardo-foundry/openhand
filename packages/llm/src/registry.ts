@@ -41,26 +41,26 @@ export function resolveProvider(opts: ResolveProviderOptions = {}): LLMProvider 
   switch (id) {
     case 'anthropic':
       return new AnthropicProvider({
-        apiKey: env.ANTHROPIC_API_KEY,
-        baseUrl: env.ANTHROPIC_BASE_URL,
-        fetchImpl: opts.fetchImpl,
-        timeoutMs: opts.timeoutMs,
+        ...(env.ANTHROPIC_API_KEY !== undefined ? { apiKey: env.ANTHROPIC_API_KEY } : {}),
+        ...(env.ANTHROPIC_BASE_URL !== undefined ? { baseUrl: env.ANTHROPIC_BASE_URL } : {}),
+        ...(opts.fetchImpl !== undefined ? { fetchImpl: opts.fetchImpl } : {}),
+        ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}),
       });
 
     case 'ollama':
       return new OllamaProvider({
-        baseUrl: env.OLLAMA_BASE_URL,
-        fetchImpl: opts.fetchImpl,
-        timeoutMs: opts.timeoutMs,
+        ...(env.OLLAMA_BASE_URL !== undefined ? { baseUrl: env.OLLAMA_BASE_URL } : {}),
+        ...(opts.fetchImpl !== undefined ? { fetchImpl: opts.fetchImpl } : {}),
+        ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}),
       });
 
     case 'openai':
     default:
       return new OpenAIProvider({
-        apiKey: env.OPENAI_API_KEY,
-        baseUrl: env.OPENAI_BASE_URL,
-        fetchImpl: opts.fetchImpl,
-        timeoutMs: opts.timeoutMs,
+        ...(env.OPENAI_API_KEY !== undefined ? { apiKey: env.OPENAI_API_KEY } : {}),
+        ...(env.OPENAI_BASE_URL !== undefined ? { baseUrl: env.OPENAI_BASE_URL } : {}),
+        ...(opts.fetchImpl !== undefined ? { fetchImpl: opts.fetchImpl } : {}),
+        ...(opts.timeoutMs !== undefined ? { timeoutMs: opts.timeoutMs } : {}),
       });
   }
 }

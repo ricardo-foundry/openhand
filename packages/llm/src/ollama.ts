@@ -88,21 +88,23 @@ export class OllamaProvider implements LLMProvider {
     const promptTokens = Number(parsed?.prompt_eval_count ?? 0);
     const completionTokens = Number(parsed?.eval_count ?? 0);
 
-    return {
+    const response: CompletionResponse = {
       id: String(parsed?.created_at ?? ''),
       model: String(parsed?.model ?? request.model),
       content: typeof message.content === 'string' ? message.content : '',
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       finishReason: this.mapDoneReason(parsed?.done_reason, toolCalls.length > 0),
-      usage:
-        promptTokens > 0 || completionTokens > 0
-          ? {
-              promptTokens,
-              completionTokens,
-              totalTokens: promptTokens + completionTokens,
-            }
-          : undefined,
     };
+    if (toolCalls.length > 0) {
+      response.toolCalls = toolCalls;
+    }
+    if (promptTokens > 0 || completionTokens > 0) {
+      response.usage = {
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+      };
+    }
+    return response;
   }
 
   async *stream(request: CompletionRequest): AsyncIterable<StreamChunk> {

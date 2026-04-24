@@ -30,6 +30,13 @@ export interface Tool {
   description: string;
   parameters: ToolParameter[];
   execute: (params: Record<string, any>, context: ExecutionContext) => Promise<any>;
+  /**
+   * Optional per-call cleanup hook. Invoked from Agent.executeTask in a
+   * `finally` block so that tools which open handles (sockets, tempfiles,
+   * browser tabs) can release them even when `execute` throws or the task
+   * is cancelled. No-op by default.
+   */
+  cleanup?: (context: ExecutionContext) => Promise<void> | void;
   permissions: string[];
   sandboxRequired: boolean;
 }

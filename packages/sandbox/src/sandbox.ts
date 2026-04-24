@@ -70,7 +70,9 @@ export class SecureSandbox extends EventEmitter {
         : [process.cwd()]),
       networkEnabled: config.networkEnabled ?? false,
       envVars: config.envVars ?? {},
-      allowedCommands: config.allowedCommands,
+      ...(config.allowedCommands !== undefined
+        ? { allowedCommands: config.allowedCommands }
+        : {}),
     };
 
     this.allowedCommands = new Set(
@@ -151,7 +153,7 @@ export class SecureSandbox extends EventEmitter {
         action: command,
         params: { args, options },
         result: 'failure',
-        details: sandboxResult.error
+        ...(sandboxResult.error !== undefined ? { details: sandboxResult.error } : {}),
       });
 
       this.emit('execution:complete', sandboxResult);
@@ -292,23 +294,38 @@ export class SecureSandbox extends EventEmitter {
       let stderrBytes = 0;
       const MAX_BYTES = 10 * 1024 * 1024; // 10 MiB hard cap per stream
       let killed = false;
+      let settled = false;
+      let hardKillTimer: NodeJS.Timeout | undefined;
 
       const timeout = options.timeout || this.config.timeout;
+
+      const settle = (fn: () => void) => {
+        if (settled) return;
+        settled = true;
+        fn();
+      };
 
       const killEscalation = (reason: string) => {
         if (killed) return;
         killed = true;
+        // SIGTERM may race with a natural exit — both cases are fine, the
+        // child.on('close') handler below will observe the final state.
         try { child.kill('SIGTERM'); } catch { /* already dead */ }
-        const hardKill = setTimeout(() => {
-          try { child.kill('SIGKILL'); } catch { /* already dead */ }
+        hardKillTimer = setTimeout(() => {
+          // Escalate only if the child is still alive. killed=true plus
+          // child.exitCode===null tells us SIGTERM was not enough.
+          if (child.exitCode === null && child.signalCode === null) {
+            try { child.kill('SIGKILL'); } catch { /* already dead */ }
+          }
         }, 5000);
-        hardKill.unref();
-        reject(new Error(reason));
+        hardKillTimer.unref?.();
+        settle(() => reject(new Error(reason)));
       };
 
       const timeoutId = setTimeout(() => {
         killEscalation(`Execution timeout after ${timeout}ms`);
       }, timeout);
+      timeoutId.unref?.();
 
       child.stdout?.on('data', (data: Buffer) => {
         stdoutBytes += data.length;
@@ -330,18 +347,22 @@ export class SecureSandbox extends EventEmitter {
 
       child.on('close', (code) => {
         clearTimeout(timeoutId);
-        if (killed) return;
-        if (code !== 0 && code !== null) {
-          reject(new Error(`Process exited with code ${code}: ${stderr}`));
-        } else {
-          resolve({ stdout, stderr });
-        }
+        if (hardKillTimer) clearTimeout(hardKillTimer);
+        if (killed) return; // already settled by killEscalation
+        settle(() => {
+          if (code !== 0 && code !== null) {
+            reject(new Error(`Process exited with code ${code}: ${stderr}`));
+          } else {
+            resolve({ stdout, stderr });
+          }
+        });
       });
 
       child.on('error', (error) => {
         clearTimeout(timeoutId);
+        if (hardKillTimer) clearTimeout(hardKillTimer);
         if (killed) return;
-        reject(error);
+        settle(() => reject(error));
       });
     });
   }

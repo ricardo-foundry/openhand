@@ -109,22 +109,25 @@ export class AnthropicProvider implements LLMProvider {
       }
     }
 
-    return {
+    const response: CompletionResponse = {
       id: String(parsed?.id ?? ''),
       model: String(parsed?.model ?? request.model),
       content: text,
-      toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       finishReason: this.mapStopReason(parsed?.stop_reason),
-      usage: parsed?.usage
-        ? {
-            promptTokens: Number(parsed.usage.input_tokens ?? 0),
-            completionTokens: Number(parsed.usage.output_tokens ?? 0),
-            totalTokens:
-              Number(parsed.usage.input_tokens ?? 0) +
-              Number(parsed.usage.output_tokens ?? 0),
-          }
-        : undefined,
     };
+    if (toolCalls.length > 0) {
+      response.toolCalls = toolCalls;
+    }
+    if (parsed?.usage) {
+      response.usage = {
+        promptTokens: Number(parsed.usage.input_tokens ?? 0),
+        completionTokens: Number(parsed.usage.output_tokens ?? 0),
+        totalTokens:
+          Number(parsed.usage.input_tokens ?? 0) +
+          Number(parsed.usage.output_tokens ?? 0),
+      };
+    }
+    return response;
   }
 
   async *stream(request: CompletionRequest): AsyncIterable<StreamChunk> {

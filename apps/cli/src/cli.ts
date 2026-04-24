@@ -185,7 +185,7 @@ Always prioritize security and ask for confirmation before performing destructiv
 
   private async handleSlashCommand(command: string): Promise<boolean> {
     const parts = command.slice(1).split(' ');
-    const cmd = parts[0].toLowerCase();
+    const cmd = (parts[0] ?? '').toLowerCase();
     const args = parts.slice(1);
 
     switch (cmd) {

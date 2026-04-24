@@ -237,9 +237,17 @@ export async function runRepl(deps: ReplDeps): Promise<void> {
   });
 
   let exited = false;
+  let activeSpinner: Spinner | undefined;
   const onSigint = (): void => {
     out.write('\n^C\nexiting...\n');
     exited = true;
+    // Stop any spinner so we don't leave ANSI state garbling the terminal.
+    activeSpinner?.stop();
+    // Best-effort persist so the user's in-REPL /model changes aren't lost.
+    // We don't await here because SIGINT handlers should return quickly;
+    // fs.writeFile's callback keeps the event loop alive just long enough
+    // for rl.close() to settle.
+    saveConfig(config, deps.configPath).catch(() => { /* swallow */ });
     rl.close();
   };
   process.on('SIGINT', onSigint);
@@ -269,14 +277,15 @@ export async function runRepl(deps: ReplDeps): Promise<void> {
         continue;
       }
 
-      const spinner = new Spinner(out);
-      spinner.start('thinking');
+      activeSpinner = new Spinner(out);
+      activeSpinner.start('thinking');
       try {
         await deps.send(line);
       } catch (err) {
         out.write(`\nerror: ${(err as Error).message}\n`);
       } finally {
-        spinner.stop();
+        activeSpinner.stop();
+        activeSpinner = undefined;
       }
       out.write('> ');
     }

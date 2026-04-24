@@ -151,8 +151,13 @@ export class Agent extends EventEmitter<AgentEventMap> {
     task.startedAt = new Date();
     this.emit('task:start', task);
 
+    // Resolve the tool up-front so we can run its cleanup hook from
+    // `finally` even if execute() throws. Cleanup is the tool's chance
+    // to release sockets, temp files, browser tabs, etc.
+    const tool = this.tools.get(task.type);
+    let context: ExecutionContext | undefined;
+
     try {
-      const tool = this.tools.get(task.type);
       if (!tool) {
         throw new Error(`Tool "${task.type}" not found`);
       }
@@ -164,7 +169,7 @@ export class Agent extends EventEmitter<AgentEventMap> {
       }
 
       // 创建执行上下文
-      const context: ExecutionContext = {
+      context = {
         taskId: task.id,
         userId: 'user',
         sessionId,
@@ -175,17 +180,31 @@ export class Agent extends EventEmitter<AgentEventMap> {
 
       // 执行任务
       const result = await tool.execute(task.params, context);
-      
+
       task.result = result;
       task.status = 'completed';
       task.completedAt = new Date();
-      
+
       this.emit('task:complete', task);
 
     } catch (error) {
       task.status = 'failed';
       task.error = error instanceof Error ? error.message : String(error);
       this.emit('task:error', { taskId: task.id, error: task.error });
+    } finally {
+      // Best-effort cleanup. If the tool's cleanup also throws we swallow
+      // the error — the original task result/error takes precedence and we
+      // don't want cleanup failures to mask the real cause.
+      if (tool?.cleanup && context) {
+        try {
+          await tool.cleanup(context);
+        } catch (cleanupErr) {
+          this.emit('system', {
+            message: `Tool "${tool.name}" cleanup failed: ${cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr)}`,
+            level: 'warn',
+          });
+        }
+      }
     }
   }
 
