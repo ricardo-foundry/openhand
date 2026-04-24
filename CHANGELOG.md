@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-25
+
+### Added
+
+- `cookbook/`: five short, code-first recipes (hello-world, plugin authoring,
+  custom LLM provider, sandboxed shell, streaming UI).
+- `examples/`: three runnable companion scripts (`hello-world.ts`,
+  `rss-digest-agent.ts`, `shell-automation.ts`) plus an index README.
+- `landing/`: single-file static landing page (HTML + CSS + mermaid)
+  designed for GitHub Pages, with an OG card SVG.
+- `.github/workflows/deploy-pages.yml`: auto-deploys `landing/` to GitHub
+  Pages on pushes that touch the directory.
+- `packages/core/src/plugin-loader.ts`: 100ms one-shot retry on watcher
+  load failures, so half-written plugin files (mid-`npm install`,
+  mid-checkout) don't surface as spurious errors. Covered by a new test.
+- JSDoc module-level headers on the agent core, server routes, sandbox
+  runtime, and all three LLM providers.
+
+### Changed
+
+- `README.md`: rebuilt around a 5-minute Quickstart, a tighter compare
+  table, "What can you actually build?" section, mermaid architecture
+  diagram, "Stars over time" badge, and links into the new cookbook.
+- `apps/cli/src/cli.ts`: `sendMessage` now resolves only after the agent
+  emits its terminal `message` (assistant) or `system` (error) event,
+  making the REPL spinner stop in lockstep with output.
+- `packages/llm/src/client.ts`: documented the in-process scope of the
+  rate limiter and cost tracker, with a pointer to the README guidance
+  on multi-pod deployment.
+
+### Tests
+
+- 121 tests across six workspaces (added a watcher-retry test in
+  `packages/core/tests/plugin-loader.test.ts`).
+
+## [0.1.1] - 2026-04-25
+
 ### Added
 
 - `packages/llm/src/anthropic.ts`: first-class Anthropic Messages provider.
@@ -43,5 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `plugins/weather`: reference plugin demonstrating the plugin manifest + lifecycle.
 - Monorepo scaffolding via npm workspaces, TypeScript build, `node:test` harness.
 
-[Unreleased]: https://github.com/Ricardo-M-L/openhand/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Ricardo-M-L/openhand/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Ricardo-M-L/openhand/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/Ricardo-M-L/openhand/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Ricardo-M-L/openhand/releases/tag/v0.1.0

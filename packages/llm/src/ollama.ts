@@ -1,3 +1,13 @@
+/**
+ * @module @openhand/llm/ollama
+ *
+ * Provider for a local Ollama daemon (default `http://localhost:11434`).
+ * Hits the native `/api/chat` endpoint and consumes its newline-delimited
+ * JSON stream. No vendor SDK; just `fetch` + a small ndjson reader.
+ *
+ * Recommended for zero-config local development — see
+ * `cookbook/01-hello-world.md`.
+ */
 import type { LLMProvider } from './provider';
 import {
   LLMError,

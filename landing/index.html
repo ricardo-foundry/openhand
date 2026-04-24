@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenHand — LLM-agnostic, plugin-first AI agent runtime</title>
+  <meta name="description" content="OpenHand is an open-source agent runtime: provider-neutral LLM, sandboxed tools, plugin-first architecture. TypeScript, monorepo, MIT." />
+
+  <meta property="og:title" content="OpenHand — LLM-agnostic agent runtime" />
+  <meta property="og:description" content="Sandboxed by default. Plugin-first. Three providers in-box. MIT." />
+  <meta property="og:image" content="./og-card.svg" />
+  <meta property="og:url" content="https://ricardo-m-l.github.io/openhand/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310b981'/%3E%3Ctext x='50%25' y='55%25' font-family='monospace' font-size='18' text-anchor='middle' fill='%23000' font-weight='800'%3E%E2%9C%8B%3C/text%3E%3C/svg%3E" />
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #11171f;
+      --panel-2: #161e29;
+      --line: #1f2a37;
+      --fg: #e6edf3;
+      --muted: #8b97a7;
+      --accent: #10b981;
+      --accent-soft: rgba(16, 185, 129, 0.12);
+      --warn: #f59e0b;
+      --code: #0d141c;
+      --link: #7dd3fc;
+      --max: 1100px;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+      line-height: 1.55;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre, kbd { font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace; }
+    code { background: var(--code); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    pre {
+      background: var(--code);
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    pre code { background: none; padding: 0; }
+    h1, h2, h3 { letter-spacing: -0.01em; line-height: 1.2; }
+    h2 { font-size: 1.65rem; margin: 0 0 16px; }
+    h3 { font-size: 1.1rem; margin: 0 0 8px; }
+    section { padding: 56px 24px; border-bottom: 1px solid var(--line); }
+    .wrap { max-width: var(--max); margin: 0 auto; }
+    .muted { color: var(--muted); }
+
+    /* nav */
+    nav.top {
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(11, 15, 20, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    nav.top .wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px;
+    }
+    nav.top a { color: var(--fg); margin-left: 18px; font-size: 0.95em; }
+    nav.top .brand { font-weight: 700; letter-spacing: -0.01em; }
+    nav.top .brand .dot { color: var(--accent); }
+
+    /* hero */
+    .hero { padding: 96px 24px 80px; text-align: center; }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      margin: 0 0 14px;
+      background: linear-gradient(180deg, #fff 0%, #9ca3af 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .hero .tag {
+      color: var(--muted);
+      font-size: 1.2rem;
+      max-width: 720px; margin: 0 auto 28px;
+    }
+    .hero .accent { color: var(--accent); }
+    .badges img { height: 22px; margin: 4px 3px; vertical-align: middle; }
+    .cta {
+      display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+      margin: 28px 0 18px;
+    }
+    .btn {
+      display: inline-block; padding: 11px 20px; border-radius: var(--radius);
+      font-weight: 600; font-size: 0.95rem;
+    }
+    .btn.primary { background: var(--accent); color: #0b0f14; }
+    .btn.primary:hover { background: #34d399; text-decoration: none; }
+    .btn.ghost { background: var(--panel); border: 1px solid var(--line); color: var(--fg); }
+    .btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
+
+    /* feature grid */
+    .features {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px; margin-top: 24px;
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--line);
+      padding: 22px; border-radius: var(--radius);
+    }
+    .card h3 { color: var(--accent); }
+    .card p { color: var(--muted); margin: 6px 0 0; font-size: 0.95em; }
+
+    /* compare table */
+    table.cmp {
+      width: 100%; border-collapse: collapse; margin-top: 14px;
+      font-size: 0.93em;
+    }
+    table.cmp th, table.cmp td {
+      padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left;
+    }
+    table.cmp thead th { color: var(--muted); font-weight: 500; }
+    table.cmp tbody tr:hover { background: var(--panel-2); }
+    table.cmp .yes { color: var(--accent); font-weight: 600; }
+    table.cmp .no { color: var(--muted); }
+    table.cmp .first { color: #fff; font-weight: 600; }
+
+    /* mermaid container */
+    .mermaid-wrap {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    /* footer */
+    footer { padding: 32px 24px; text-align: center; color: var(--muted); font-size: 0.9em; }
+    footer a { color: var(--muted); }
+
+    /* badge for use-case cards */
+    .use {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .use .card pre { font-size: 12.5px; margin-top: 12px; }
+
+    .quickstart-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 720px) {
+      .quickstart-grid { grid-template-columns: 1fr; }
+      nav.top a { margin-left: 10px; font-size: 0.88em; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand">Open<span class="dot">·</span>Hand</span>
+    <div>
+      <a href="#features">Features</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#cookbook">Cookbook</a>
+      <a href="https://github.com/Ricardo-M-L/openhand">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>The agent runtime that doesn't <span class="accent">pick a side</span>.</h1>
+    <p class="tag">
+      LLM-agnostic, plugin-first, sandboxed by default. A small core you can read in a weekend,
+      with the wiring you actually need: providers, tools, policy, REPL, and an SSE task stream.
+    </p>
+
+    <div class="badges">
+      <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+      <img src="https://img.shields.io/github/actions/workflow/status/Ricardo-M-L/openhand/ci.yml?label=CI" alt="CI status" />
+      <img src="https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white" alt="TypeScript" />
+      <img src="https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white" alt="Node 20+" />
+      <img src="https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white" alt="npm workspaces" />
+      <img src="https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white" alt="Docker ready" />
+      <img src="https://img.shields.io/badge/tests-121-success.svg" alt="121 tests" />
+      <img src="https://img.shields.io/badge/Issues-welcome-brightgreen.svg" alt="Issues welcome" />
+    </div>
+
+    <div class="cta">
+      <a class="btn primary" href="#quickstart">▶ 5-minute Quickstart</a>
+      <a class="btn ghost" href="https://github.com/Ricardo-M-L/openhand">Star on GitHub</a>
+      <a class="btn ghost" href="#cookbook">Read the Cookbook</a>
+    </div>
+
+    <p class="muted" style="margin-top: 18px; font-size: 0.92em;">
+      <code>git clone</code> → <code>npm i</code> → <code>npx tsx examples/hello-world.ts</code> — that's the whole onboarding.
+    </p>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2>What's in the box</h2>
+    <p class="muted">Six concerns, six small packages. Replace any of them.</p>
+
+    <div class="features">
+      <div class="card"><h3>Provider-neutral LLM</h3><p>OpenAI, Anthropic Messages, Ollama in-box behind one <code>LLMProvider</code> interface. No vendor SDK; just <code>fetch</code>.</p></div>
+      <div class="card"><h3>Sandbox by default</h3><p>Shell metachars, NUL bytes, interpreter eval flags, path escapes — all rejected at parse time, before spawn.</p></div>
+      <div class="card"><h3>Plugin-first</h3><p>Drop a folder under <code>plugins/</code>, declare a manifest in <code>package.json</code>, get a hot-reloaded tool.</p></div>
+      <div class="card"><h3>LLMClient decorator</h3><p>Exponential backoff, AbortController timeouts, FIFO token bucket, in-memory cost tracker — opt-in.</p></div>
+      <div class="card"><h3>SSE task stream</h3><p>Per-task ring buffer with <code>Last-Event-ID</code> resume. Tail an agent run from any browser.</p></div>
+      <div class="card"><h3>CLI &amp; Web shipped</h3><p>Native REPL with <code>/help /model /reset /save /exit</code>. React + Tailwind SPA in <code>apps/web</code>. Zero hidden services.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="vs">
+  <div class="wrap">
+    <h2>How it compares</h2>
+    <p class="muted">Honest, opinionated, three rows that actually matter.</p>
+    <table class="cmp">
+      <thead>
+        <tr><th></th><th>OpenHand</th><th>AutoGPT</th><th>CrewAI</th><th>LangChain Agents</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Provider lock-in</td>          <td class="first yes">none</td>            <td>OpenAI-first</td>     <td>OpenAI-first</td>      <td>many, heavy</td></tr>
+        <tr><td>Sandbox by default</td>        <td class="first yes">yes</td>             <td class="no">no</td>    <td class="no">no</td>     <td class="no">opt-in</td></tr>
+        <tr><td>Hot-reload plugins</td>        <td class="first yes">yes (fs.watch)</td>  <td class="no">no</td>    <td class="no">no</td>     <td class="no">restart</td></tr>
+        <tr><td>Core LOC you can read</td>     <td class="first yes">small</td>           <td>large</td>           <td>medium</td>            <td>very large</td></tr>
+        <tr><td>Typing</td>                    <td class="first yes">TS strict</td>       <td>Python</td>          <td>Python</td>            <td>Python / JS</td></tr>
+        <tr><td>Interfaces shipped</td>        <td class="first yes">CLI + Web + HTTP</td><td>CLI</td>             <td>SDK</td>               <td>SDK</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="usecases">
+  <div class="wrap">
+    <h2>What can you actually build?</h2>
+    <p class="muted">Four concrete things, each in &lt;100 lines.</p>
+    <div class="use">
+      <div class="card">
+        <h3>Weather bot</h3>
+        <p>The shipped <code>plugins/weather</code> exposes a <code>get_weather</code> tool. Wire it to a chat REPL and you have a working assistant.</p>
+        <pre><code>openhand chat
+> what's the weather in Tokyo?</code></pre>
+      </div>
+      <div class="card">
+        <h3>Code reviewer</h3>
+        <p>Allow <code>git</code> + <code>cat</code> in the sandbox; ask the agent to read a diff and post inline notes.</p>
+        <pre><code>openhand ask "review the diff in HEAD~1..HEAD"</code></pre>
+      </div>
+      <div class="card">
+        <h3>RSS digest agent</h3>
+        <p>15-line plugin (see Cookbook 02) + a 5-minute cron pulls Hacker News and pushes a Markdown digest to Slack.</p>
+        <pre><code>POLL_MS=300000 npx tsx examples/rss-digest-agent.ts</code></pre>
+      </div>
+      <div class="card">
+        <h3>Shell automation helper</h3>
+        <p>Sandbox-restricted shell + agent loop = "deploy assistant" that can <code>git pull</code>, run tests, but cannot <code>rm -rf</code>.</p>
+        <pre><code>openhand exec "git status &amp;&amp; npm test"</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <h2>How it's organized</h2>
+    <p class="muted">Apps depend on packages. Plugins are discovered, not imported. Providers are a swap.</p>
+    <div class="mermaid-wrap">
+      <pre class="mermaid">
+flowchart LR
+  user([User])
+  subgraph Apps["apps/"]
+    CLI["cli<br/>(REPL)"]
+    WEB["web<br/>(React + Tailwind)"]
+    SRV["server<br/>(HTTP + SSE)"]
+  end
+  subgraph Packages["packages/"]
+    CORE["core<br/>agent · planner · policy"]
+    TOOLS["tools<br/>file · shell · http · email"]
+    SBX["sandbox<br/>spawn · policy · checks"]
+    LLM["llm<br/>providers + LLMClient"]
+  end
+  PLUG["plugins/*<br/>(weather, calculator, rss…)"]
+  PROV[("OpenAI · Anthropic · Ollama · custom")]
+
+  user --> CLI
+  user --> WEB
+  WEB --> SRV
+  CLI --> CORE
+  SRV --> CORE
+  CORE --> TOOLS
+  CORE --> LLM
+  TOOLS --> SBX
+  LLM --> PROV
+  PLUG -.discovers + registers tools.-> CORE
+      </pre>
+    </div>
+  </div>
+</section>
+
+<section id="quickstart">
+  <div class="wrap">
+    <h2>5-minute quickstart</h2>
+    <div class="quickstart-grid">
+      <div class="card">
+        <h3>Local dev</h3>
+        <pre><code>git clone https://github.com/Ricardo-M-L/openhand.git
+cd openhand
+cp .env.example .env
+npm install &amp;&amp; npm run build
+npm run dev          # CLI + server + web</code></pre>
+      </div>
+      <div class="card">
+        <h3>Docker</h3>
+        <pre><code>git clone https://github.com/Ricardo-M-L/openhand.git
+cd openhand
+cp .env.example .env
+docker compose up --build
+# web    -> http://localhost:3000
+# server -> http://localhost:3001</code></pre>
+      </div>
+      <div class="card">
+        <h3>Hello world (no API key)</h3>
+        <pre><code>brew install ollama &amp;&amp; ollama serve &amp;
+ollama pull qwen2.5:0.5b
+
+LLM_PROVIDER=ollama LLM_MODEL=qwen2.5:0.5b \
+  npx tsx examples/hello-world.ts</code></pre>
+      </div>
+      <div class="card">
+        <h3>SSE task stream</h3>
+        <pre><code>npm run dev:server &amp;
+curl -N http://localhost:3001/api/tasks/demo-1/stream &amp;
+curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="cookbook">
+  <div class="wrap">
+    <h2>Cookbook</h2>
+    <p class="muted">Five short recipes. Each one is &lt;400 words, code-first.</p>
+    <div class="features">
+      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/01-hello-world.md">01 · Hello World</a></h3><p>Drive a real agent end-to-end with zero API keys via Ollama.</p></div>
+      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/02-writing-a-plugin.md">02 · Writing a plugin</a></h3><p>Ship a 60-line RSS plugin the agent can call.</p></div>
+      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/03-custom-llm-provider.md">03 · Custom LLM provider</a></h3><p>Point the LLM layer at any OpenAI-compatible local server.</p></div>
+      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/04-sandboxed-shell.md">04 · Sandboxed shell</a></h3><p>Watch the sandbox reject <code>rm -rf $HOME</code> at parse time.</p></div>
+      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/05-streaming-ui.md">05 · Streaming UI</a></h3><p>Tail the SSE task stream from a 30-line React component.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>
+      MIT-licensed · <a href="https://github.com/Ricardo-M-L/openhand">GitHub</a> ·
+      <a href="https://github.com/Ricardo-M-L/openhand/blob/main/CHANGELOG.md">Changelog</a> ·
+      <a href="https://github.com/Ricardo-M-L/openhand/issues/new/choose">Report an issue</a>
+    </p>
+    <p>Built by humans who got tired of import-heavy meta-frameworks.</p>
+  </div>
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#11171f',
+      primaryColor: '#161e29',
+      primaryBorderColor: '#10b981',
+      primaryTextColor: '#e6edf3',
+      lineColor: '#8b97a7',
+      secondaryColor: '#0d141c',
+      tertiaryColor: '#0d141c',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true },
+  });
+</script>
+</body>
+</html>

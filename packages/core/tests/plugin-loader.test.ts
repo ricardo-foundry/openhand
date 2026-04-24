@@ -151,6 +151,37 @@ test('pluginToolsToMap adapts plugin tools to core Tool shape', () => {
   assert.equal(t.sandboxRequired, false);
 });
 
+test('watch retries once after 100ms when entry file is not yet on disk', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'oh-plugins-watch-'));
+  const loader = new PluginLoader({ pluginsDir: root });
+  const errors: string[] = [];
+  const loadedIds: string[] = [];
+  loader.on('plugin', (e: any) => {
+    if (e.type === 'error') errors.push(e.id);
+    if (e.type === 'loaded') loadedIds.push(e.plugin.manifest.id);
+  });
+  const stop = loader.watch();
+
+  // Step 1: write only package.json — entry.js is NOT there yet.
+  const dir = path.join(root, 'late');
+  fs.mkdirSync(dir);
+  fs.writeFileSync(
+    path.join(dir, 'package.json'),
+    JSON.stringify({ name: 'late', version: '1', openhand: { id: 'late', entry: './index.js' } }),
+  );
+
+  // Wait past the debounce (100ms) so the first attempt fires + fails.
+  await new Promise(r => setTimeout(r, 60));
+  // Step 2: drop the entry in BEFORE the retry fires.
+  fs.writeFileSync(path.join(dir, 'index.js'), 'module.exports = { tools: [] };');
+  // Wait long enough for the 100ms retry to land.
+  await new Promise(r => setTimeout(r, 350));
+
+  stop();
+  assert.ok(loadedIds.includes('late'), `expected late to load, got ${loadedIds.join(',')}`);
+  assert.ok(!errors.includes('late'), `expected no error event, got ${errors.join(',')}`);
+});
+
 test('loadFromDir honors injected require so entry is never actually loaded from disk', async () => {
   const root = await scratchDir();
   const dir = path.join(root, 'virt');

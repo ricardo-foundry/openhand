@@ -1,3 +1,16 @@
+/**
+ * @module @openhand/server/routes
+ *
+ * REST + SSE surface for the OpenHand server. Routes split into three groups:
+ *
+ *   1. `/api/tasks/:id/stream`  — live SSE feed with `Last-Event-ID` resume.
+ *   2. `/api/tasks/:id/_demo`   — dev-only synthetic stream so the web UI
+ *      has something to render without a real LLM round-trip.
+ *   3. `/api/agents/...`        — CRUD for agents, sessions, and approvals.
+ *
+ * Long-running connections (SSE) install a 15s heartbeat to keep proxies
+ * happy and clean themselves up on `req.close`/`req.error` — never leak.
+ */
 import { Router, Request, Response } from 'express';
 import { AgentManager } from './agent-manager';
 import { globalTaskStream, formatSseFrame, type TaskStatus } from './task-stream';

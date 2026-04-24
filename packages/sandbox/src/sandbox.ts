@@ -1,3 +1,18 @@
+/**
+ * @module @openhand/sandbox/sandbox
+ *
+ * `SecureSandbox` is the runtime arm of the sandbox: it spawns child
+ * processes (never via a shell), enforces wallclock + memory + output-size
+ * limits, and routes all decisions through the pure `policy.ts` functions
+ * so the same allow/deny logic can be unit-tested without I/O.
+ *
+ * Defense layers, in order:
+ *   1. Allowlist the binary basename.
+ *   2. Reject interpreter eval flags (`bash -c`, `node -e`, …).
+ *   3. Reject shell metacharacters in argv (defense-in-depth even though we
+ *      never spawn with `shell: true`).
+ *   4. Spawn with explicit `cwd`, `env`, `timeout`, and `maxBuffer`.
+ */
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as os from 'os';

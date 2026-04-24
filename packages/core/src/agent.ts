@@ -1,3 +1,19 @@
+/**
+ * @module @openhand/core/agent
+ *
+ * The Agent owns one in-memory conversation graph: sessions → messages + tasks.
+ * It is the integration point between three pluggable concerns:
+ *
+ *   - `TaskPlanner`  — turns user input into structured tool calls (LLM-driven).
+ *   - `Tool` map     — name → callable, may include plugin-supplied tools.
+ *   - `PolicyEngine` — gates execution; can require human approval per tool.
+ *
+ * Every state transition is broadcast through `EventEmitter` (`message`,
+ * `task:start`, `task:complete`, `task:error`, `approval:required`, `system`).
+ * Consumers subscribe instead of polling — `apps/cli` drives a REPL spinner,
+ * `apps/server` forwards to SSE, `apps/web` re-renders. The agent itself
+ * holds no I/O — it never reads the network or the filesystem directly.
+ */
 import { EventEmitter } from 'eventemitter3';
 import { v4 as uuidv4 } from 'uuid';
 import {

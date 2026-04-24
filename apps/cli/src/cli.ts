@@ -96,13 +96,42 @@ Always prioritize security and ask for confirmation before performing destructiv
     }
 
     const spinner = ora('Thinking...').start();
+    const agent = this.agent;
+
+    // Resolve when agent emits a terminal signal:
+    //  - assistant `message` event       -> normal completion
+    //  - `system` event with level=error -> hard failure
+    //  - `task:error` on a non-approval task
+    // Wired this way so `runRepl` can `await send()` and trust the spinner
+    // is stopped + output flushed before printing the next prompt.
+    const settled = new Promise<void>(resolve => {
+      let done = false;
+      const finish = (): void => {
+        if (done) return;
+        done = true;
+        agent.off('message', onMessage);
+        agent.off('system', onSystem);
+        resolve();
+      };
+      const onMessage = (msg: Message): void => {
+        if (msg.role === 'assistant') finish();
+      };
+      const onSystem = (e: { level: string }): void => {
+        if (e.level === 'error') finish();
+      };
+      agent.on('message', onMessage);
+      agent.on('system', onSystem);
+    });
 
     try {
-      await this.agent.chat(this.sessionId, message);
-      spinner.stop();
+      await Promise.all([
+        agent.chat(this.sessionId, message),
+        settled,
+      ]);
     } catch (error) {
-      spinner.stop();
       console.log(chalk.red('Error:'), error);
+    } finally {
+      spinner.stop();
     }
   }
 

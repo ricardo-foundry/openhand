@@ -1,3 +1,10 @@
+/**
+ * @module @openhand/llm/anthropic
+ *
+ * Provider for Anthropic's Messages API (`POST /v1/messages`). Translates
+ * `ChatMessage[]` into the `system` + `messages` shape Anthropic expects, and
+ * normalises tool calls back into the cross-provider `ToolCall[]` shape.
+ */
 import type { LLMProvider } from './provider';
 import {
   LLMError,

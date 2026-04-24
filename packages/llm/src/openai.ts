@@ -1,3 +1,13 @@
+/**
+ * @module @openhand/llm/openai
+ *
+ * Thin `fetch` wrapper around `POST /v1/chat/completions`. Speaks the OpenAI
+ * Chat Completions wire format, which is the de-facto lingua franca for
+ * compatible servers (vLLM, LM Studio, llama.cpp, Together, Groq, …).
+ *
+ * Override `baseUrl` to point at any of those — see
+ * `cookbook/03-custom-llm-provider.md`.
+ */
 import type { LLMProvider } from './provider';
 import {
   LLMError,

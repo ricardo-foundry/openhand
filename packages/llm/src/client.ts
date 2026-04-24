@@ -103,6 +103,12 @@ export interface LLMClientOptions {
  * None of this lives in core or in the individual providers, so a caller
  * can plug in a provider that is already wrapped by their own client
  * stack without losing any behavior.
+ *
+ * **Scope:** the rate limiter and cost tracker are in-process / per-instance.
+ * For multi-pod deployments where one quota must be shared across replicas,
+ * swap `TokenBucket` for a Redis-backed bucket and pass a `costTracker`
+ * implementation that writes to your shared store. See README §
+ * "LLMClient — scope and limits" for the wiring sketch.
  */
 export class LLMClient implements LLMProvider {
   readonly info: LLMProviderInfo;

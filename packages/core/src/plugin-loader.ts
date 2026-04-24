@@ -222,28 +222,46 @@ export class PluginLoader extends EventEmitter {
 
     let debounce: NodeJS.Timeout | null = null;
     const pending = new Set<string>();
+    // Track in-progress retries so we don't pile up on noisy fs.watch events.
+    const retrying = new Set<string>();
+
+    const tryLoad = (dirname: string, attempt: number): void => {
+      const dir = path.join(this.pluginsDir, dirname);
+      if (!fs.existsSync(dir)) {
+        // deleted
+        const byDir = Array.from(this.plugins.values()).find(p => p.dir === dir);
+        if (byDir) this.unload(byDir.manifest.id);
+        return;
+      }
+      try {
+        this.loadFromDir(dir);
+      } catch (error) {
+        // editors / `npm install` / git checkout often emit watch events
+        // before package.json or the entry file is fully on disk. Give it
+        // one 100ms retry before surfacing as an error.
+        if (attempt === 0 && !retrying.has(dirname)) {
+          retrying.add(dirname);
+          const t = setTimeout(() => {
+            retrying.delete(dirname);
+            tryLoad(dirname, 1);
+          }, 100);
+          t.unref?.();
+          return;
+        }
+        this.emitSafe({
+          type: 'error',
+          id: dirname,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+      }
+    };
 
     const flush = (): void => {
       const ids = Array.from(pending);
       pending.clear();
       debounce = null;
       for (const dirname of ids) {
-        const dir = path.join(this.pluginsDir, dirname);
-        if (!fs.existsSync(dir)) {
-          // deleted
-          const byDir = Array.from(this.plugins.values()).find(p => p.dir === dir);
-          if (byDir) this.unload(byDir.manifest.id);
-          continue;
-        }
-        try {
-          this.loadFromDir(dir);
-        } catch (error) {
-          this.emitSafe({
-            type: 'error',
-            id: dirname,
-            error: error instanceof Error ? error : new Error(String(error)),
-          });
-        }
+        tryLoad(dirname, 0);
       }
     };
 
