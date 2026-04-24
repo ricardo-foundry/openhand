@@ -13,12 +13,14 @@
     "dev:web": "cd apps/web && npm run dev",
     "dev:cli": "cd apps/cli && npm run dev",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces && npm run test:e2e && npm run bench",
+    "test": "npm run test --workspaces && npm run test:plugins && npm run test:e2e && npm run bench",
     "test:unit": "npm run test --workspaces",
+    "test:plugins": "node --test plugins/*/tests/*.test.js",
     "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
     "bench": "node --import tsx --test bench/*.bench.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "start": "cd apps/server && npm start"
+    "start": "cd apps/server && npm start",
+    "docs:api": "typedoc --entryPointStrategy resolve --entryPoints packages/core/src/index.ts --entryPoints packages/llm/src/index.ts --entryPoints packages/sandbox/src/index.ts --entryPoints packages/tools/src/index.ts --out docs/api --readme docs/api-README.md --name OpenHand --excludePrivate --excludeInternal --skipErrorChecking"
   },
   "keywords": [
     "ai-agent",
@@ -34,6 +36,7 @@
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "typedoc": "^0.28.19",
     "typescript": "^5.3.3"
   }
 }

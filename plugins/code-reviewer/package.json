@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-code-reviewer",
+  "version": "1.0.0",
+  "description": "Accept a unified diff, ask the LLM for a review, and render a Markdown report",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "code-review", "diff", "llm"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "code-reviewer",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Turn a unified diff into a structured LLM-powered review report.",
+    "permissions": ["llm:chat"]
+  }
+}

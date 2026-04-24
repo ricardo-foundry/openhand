@@ -1,10 +1,12 @@
-name: Deploy landing to GitHub Pages
+name: Deploy landing + API reference to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
       - "landing/**"
+      - "packages/**"
+      - "docs/api-README.md"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -21,7 +23,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy landing/
+    name: Build + deploy landing/ and docs/api
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -30,13 +32,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Generate TypeDoc API reference
+        run: npm run docs:api
+
+      - name: Assemble publish tree
+        # The Pages artifact is a single directory. We stage landing/ at the
+        # root and drop the generated API reference under /api/.
+        run: |
+          mkdir -p _site
+          cp -R landing/* _site/
+          mkdir -p _site/api
+          cp -R docs/api/* _site/api/
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./landing
+          path: ./_site
 
       - name: Deploy to GitHub Pages
         id: deployment

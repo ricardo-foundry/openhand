@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-file-organizer",
+  "version": "1.0.0",
+  "description": "Scan a directory, classify files with the LLM, and propose (dry-run) renames",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "file-organizer", "llm", "dry-run"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "file-organizer",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Scan → classify → rename-proposal plugin. Dry-run by default; real moves gated behind `apply=true` plus host approval.",
+    "permissions": ["fs:read", "fs:write", "llm:chat"]
+  }
+}

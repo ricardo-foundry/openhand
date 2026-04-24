@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-rss-digest",
+  "version": "1.0.0",
+  "description": "Fetch an RSS/Atom feed, render a Markdown digest, and save it under ~/.openhand/digests/",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "rss", "atom", "digest"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "rss-digest",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Subscribe to an RSS feed, summarise it, and drop a dated Markdown digest on disk.",
+    "permissions": ["network:http", "fs:write:~/.openhand"]
+  }
+}

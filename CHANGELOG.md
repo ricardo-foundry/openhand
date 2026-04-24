@@ -7,6 +7,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-25
+
+### Added
+
+- **Three new official plugins** under `plugins/`, each with a full
+  `package.json` manifest, README, and hermetic `node:test` tests:
+  - `plugins/rss-digest/` — fetches an RSS 2.0 / Atom feed (tiny
+    regex-based reader, no XML library), renders a Markdown digest, and
+    writes it to `~/.openhand/digests/` with a dated host-qualified
+    filename. 8 tests.
+  - `plugins/code-reviewer/` — accepts a unified diff, asks the LLM for
+    a structured JSON review (summary, verdict, 1–5 scores across
+    correctness/safety/readability/tests, findings), and renders a
+    Markdown report ready to paste into a PR comment. Provider-
+    agnostic — takes any `{complete({model, messages})}` shape, which
+    means `MockProvider`, `OpenAIProvider`, and every other provider
+    work through the same code path. 7 tests.
+  - `plugins/file-organizer/` — scans a directory, classifies files
+    via the LLM (with a built-in extension-map fallback), and produces
+    a **dry-run** rename plan. `organize_apply` is a separate,
+    permission-gated tool that refuses to move anything outside the
+    scan root and never overwrites. 9 tests.
+- **`@openhand/llm/mock` — `MockProvider`.** Offline-first, in-process
+  `LLMProvider` for tests, demos, and first-boot dev machines. Supports
+  canned `reply`, a round-robin `replies` queue, a dynamic `handler`,
+  tiny chunked `stream()`, synthetic `usage` reporting, and optional
+  `latencyMs` for realism. 6 tests under `packages/llm/tests/mock.test.ts`.
+- **Zero-setup Hello World.** `examples/hello-world.ts` now defaults to
+  `MockProvider` and runs end-to-end with no API key, no Docker, no
+  Ollama. `LLM_PROVIDER=openai|anthropic|ollama` still switches to a
+  real backend. New `examples/ollama-local.ts` probes
+  `localhost:11434`, talks to Ollama when available, and falls back to
+  the mock provider otherwise.
+- **`apps/cli` subcommands.** `openhand plugins <list|enable|disable|
+  reload>` wraps `PluginLoader` with a pure, injectable `runPluginsCommand`
+  that's fully unit-tested (7 tests). `openhand status` prints the active
+  provider, sandbox policy, and loaded plugins via a pure `renderStatus`
+  formatter (5 tests). Every subcommand got richer `.description()` text,
+  and the top-level `openhand --help` now lists common flows.
+- **TypeDoc API reference.** `npm run docs:api` generates a static HTML
+  reference into `docs/api/` from `packages/*/src/index.ts`. The
+  `deploy-pages.yml` workflow now runs `docs:api` on every push to
+  `main` and publishes `landing/` + `docs/api/` as `/` and `/api/` on
+  GitHub Pages. `typedoc` is the only new devDependency.
+- **Launch collateral under `docs/`.**
+  - `LAUNCH_POST.md` — ~600-word launch blog (Dev.to / HN preamble).
+  - `PRESS_KIT.md` — one-liner, elevator pitch, 2-min explainer, tweet.
+  - `TWEET_DRAFTS.md` — five launch tweets (comparative / technical /
+    security / monorepo / LLM-agnostic angles).
+  - `HN_POST.md` — "Show HN: OpenHand" title + full body.
+  - `FAQ.md` — 10 Q&As (AutoGPT, LangChain, offline, multi-model,
+    self-hosting, sandbox trust, plugin permissions, external plugins,
+    Node version, telemetry).
+- `package.json` scripts: `test:plugins` (runs every
+  `plugins/*/tests/*.test.js`), `docs:api` (typedoc).
+
+### Changed
+
+- `apps/cli/src/index.ts`: top-level `--help` now includes a "Common
+  flows" block and every subcommand describes what it actually does
+  (sandbox gating, approval gating, path-checking) rather than a
+  one-word label.
+- `examples/README.md`: reflects the new zero-setup default, documents
+  the provider resolution rule, and lists `ollama-local.ts`.
+- `.github/workflows/deploy-pages.yml`: now builds (`npm ci` +
+  `docs:api`), assembles a `_site/` tree with `landing/` at the root
+  and `docs/api/` under `/api/`, and uploads that as the Pages
+  artifact.
+
+### Total tests
+
+137 → **188** (+51). Breakdown:
+- `plugins/*` tests: 34 (10 calculator + 8 rss-digest + 7 code-reviewer +
+  9 file-organizer).
+- `packages/llm/tests/mock.test.ts`: 6.
+- `apps/cli/tests/{plugins,status}.test.ts`: 12.
+
+Strict TypeScript still clean on every workspace
+(`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`,
+`noImplicitOverride`, `noFallthroughCasesInSwitch`).
+
 ## [0.3.0] - 2026-04-25
 
 ### Added

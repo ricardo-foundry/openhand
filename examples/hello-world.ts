@@ -1,21 +1,45 @@
 /**
- * Smallest possible end-to-end LLM call against the OpenHand provider stack.
+ * The smallest possible complete demo: builds an `LLMClient`, sends one
+ * message, prints the reply.
  *
- * Defaults to Ollama on `http://localhost:11434` so you can run it without
- * any API key. Override with env:
+ * It runs **with zero setup**: by default we pick the `MockProvider`, which
+ * lives entirely in-process and returns a canned reply. That way the user
+ * can clone the repo, run this file, and immediately see an agent-style
+ * reply — no API key, no network, no surprises.
  *
+ * Override env to hit a real backend:
  *   LLM_PROVIDER=openai|anthropic|ollama
  *   LLM_MODEL=<model-id>
- *   OPENAI_API_KEY=...   (only when LLM_PROVIDER=openai)
- *   ANTHROPIC_API_KEY=... (only when LLM_PROVIDER=anthropic)
+ *   OPENAI_API_KEY=...      (only when LLM_PROVIDER=openai)
+ *   ANTHROPIC_API_KEY=...   (only when LLM_PROVIDER=anthropic)
  *
  * Run:
  *   npx tsx examples/hello-world.ts
  */
-import { resolveProvider, LLMClient } from '../packages/llm/src/index';
+import {
+  LLMClient,
+  MockProvider,
+  resolveProvider,
+  type LLMProvider,
+} from '../packages/llm/src/index';
+
+function pickProvider(): LLMProvider {
+  const explicit = process.env.LLM_PROVIDER?.toLowerCase();
+  if (!explicit || explicit === 'mock') {
+    return new MockProvider({
+      reply:
+        "Hello! I'm OpenHand running against a mock provider — no network, " +
+        'no API key, just a deterministic reply so you can verify the ' +
+        'pipeline end-to-end. Set LLM_PROVIDER=openai|anthropic|ollama to ' +
+        'talk to a real model.',
+      latencyMs: 50,
+    });
+  }
+  return resolveProvider();
+}
 
 async function main(): Promise<void> {
-  const provider = resolveProvider();
+  const provider = pickProvider();
   const client = new LLMClient({
     provider,
     retry: { maxAttempts: 2 },
@@ -32,7 +56,7 @@ async function main(): Promise<void> {
       { role: 'system', content: 'You are OpenHand. Reply in one short sentence.' },
       { role: 'user', content: 'Introduce yourself in one sentence.' },
     ],
-    maxTokens: 80,
+    maxTokens: 120,
     temperature: 0.3,
   });
 
@@ -50,6 +74,8 @@ function defaultModelFor(id: string): string {
       return 'claude-3-5-haiku-latest';
     case 'ollama':
       return 'qwen2.5:0.5b';
+    case 'mock':
+      return 'mock-1';
     case 'openai':
     default:
       return 'gpt-4o-mini';

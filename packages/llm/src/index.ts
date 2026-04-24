@@ -5,6 +5,8 @@ export { AnthropicProvider } from './anthropic';
 export type { AnthropicProviderOptions } from './anthropic';
 export { OllamaProvider } from './ollama';
 export type { OllamaProviderOptions } from './ollama';
+export { MockProvider } from './mock';
+export type { MockProviderOptions } from './mock';
 export {
   resolveProvider,
   KNOWN_PROVIDERS,

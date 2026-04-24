@@ -1,5 +1,9 @@
 node_modules/
 .DS_Store
+# Generated TypeDoc output. Source lives in packages/*/src and docs/api-README.md.
+docs/api/
+# Landing/API publish staging dir assembled by the deploy-pages workflow.
+_site/
 *.log
 .env
 .env.local
