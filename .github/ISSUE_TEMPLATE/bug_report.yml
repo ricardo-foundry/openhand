@@ -1,0 +1,86 @@
+name: Bug Report
+description: Report a reproducible bug in OpenHand
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out the
+        sections below so we can help you faster.
+  - type: checkboxes
+    id: prechecks
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I am on the latest version of `main` (or a recent release).
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: OpenHand version
+      description: Output of `npm ls openhand` or the git commit SHA you tested.
+      placeholder: v0.1.0 / commit 1a2b3c4
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected component
+      options:
+        - "apps/cli"
+        - "apps/server"
+        - "apps/web"
+        - "packages/core"
+        - "packages/tools"
+        - "packages/sandbox"
+        - "packages/llm"
+        - "plugin"
+        - "docs / build"
+        - "other"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug. Paste logs inside triple backticks.
+      placeholder: When I run `openhand ask "..."`, the CLI crashes with `ENOENT`.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal, numbered steps that reliably reproduce the issue.
+      placeholder: |
+        1. Run `npm install`
+        2. Run `npm run dev:cli`
+        3. Ask "...": see stack trace
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Node version, package manager, LLM provider.
+      value: |
+        - OS:
+        - Node:
+        - npm:
+        - LLM provider:
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context / logs
+      render: shell

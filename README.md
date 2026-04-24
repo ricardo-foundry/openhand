@@ -1,135 +1,161 @@
-# 🤖 OpenHand
+# OpenHand
 
-**安全可控的 AI Agent 助手** - 你的开源 AI 自动化伙伴
+**LLM-agnostic, plugin-first AI agent platform — sandboxed by default.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml/badge.svg)](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![npm workspaces](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
+[![Docker ready](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-> 🌟 **核心特点：安全优先** - 所有操作在沙箱中运行，敏感操作需用户确认
+OpenHand is an open-source agent runtime you actually want to point at your
+laptop: one provider-neutral LLM interface, a small set of audited tools, a
+sandbox you can trust with `shell_exec`, and a plugin system that stays out
+of core's way.
 
-## ✨ 特性
+---
 
-- 🔐 **安全沙箱** - 所有操作在隔离环境中执行
-- 🧠 **多模型支持** - OpenAI、Claude、Ollama 本地模型等
-- 💬 **双端支持** - CLI 和 Web 界面
-- ✅ **审批工作流** - 敏感操作需用户确认
-- 📧 **邮件管理** - 自动分类、摘要、回复
-- 📁 **文件操作** - 安全的文件读写
-- 🌐 **网络工具** - 网页抓取、搜索
-- 🛠️ **插件系统** - 可扩展的工具生态
+## Why OpenHand?
 
-## 🚀 快速开始
+|                           | **OpenHand**                          | AutoGPT                     | CrewAI                      | LangChain Agents            |
+| ------------------------- | ------------------------------------- | --------------------------- | --------------------------- | --------------------------- |
+| Core lines of code        | Small, auditable `packages/core`      | Large, opinionated          | Medium                      | Very large meta-framework   |
+| Sandbox by default        | Yes — `packages/sandbox`              | No                          | No                          | Optional                    |
+| LLM provider lock-in      | None — `LLMProvider` interface        | OpenAI-first                | OpenAI-first                | Many, but heavy abstractions |
+| Plugin story              | Manifest-driven, hot-registered       | Monolithic                  | Role-focused                | Chains / tools              |
+| Interfaces shipped        | CLI + Web + HTTP server               | CLI                         | SDK                         | SDK                         |
+| Typing                    | TypeScript strict, end-to-end         | Python                      | Python                      | Python / JS                 |
 
-### 安装
+OpenHand is for builders who want **just enough framework** — an agent loop,
+tool schema, policy, sandbox, LLM abstraction — and nothing you cannot read in
+a weekend.
+
+---
+
+## Features
+
+- **Provider-neutral LLM layer** — swap OpenAI, Anthropic, Ollama, or any
+  OpenAI-compatible endpoint through one `LLMProvider` interface.
+- **Sandboxed tool execution** — filesystem, shell, network, and email tools
+  all run through `packages/sandbox` with configurable roots, timeouts, and
+  output limits.
+- **Policy-gated actions** — allow, deny, or require human approval per tool
+  and per argument pattern.
+- **Plugin-first** — drop a folder under `plugins/`, declare a manifest,
+  register tools.
+- **Three interfaces** — interactive CLI, React + Tailwind web UI, and a
+  thin HTTP server you can embed.
+- **Monorepo with npm workspaces** — `packages/{core,tools,sandbox,llm}` and
+  `apps/{cli,server,web}`, each independently testable.
+- **Dockerized web UI** — production-ready `apps/web` image served by nginx.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    user([User])
+    subgraph Apps
+        CLI["apps/cli"]
+        WEB["apps/web<br/>(React + Tailwind)"]
+        SRV["apps/server<br/>(HTTP)"]
+    end
+    subgraph Packages
+        CORE["packages/core<br/>agent + planner + policy"]
+        TOOLS["packages/tools<br/>file / shell / browser / email"]
+        SBX["packages/sandbox<br/>isolated exec"]
+        LLM["packages/llm<br/>provider abstraction"]
+    end
+    PLUG["plugins/*"]
+    PROV[("OpenAI / Anthropic /<br/>Ollama / custom")]
+
+    user --> CLI
+    user --> WEB
+    WEB --> SRV
+    CLI --> CORE
+    SRV --> CORE
+    CORE --> TOOLS
+    CORE --> LLM
+    TOOLS --> SBX
+    LLM --> PROV
+    PLUG -.registers tools.-> CORE
+```
+
+See **[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)** for data flow and
+module boundaries.
+
+---
+
+## Quickstart
+
+### Option A — Docker (web UI + server)
 
 ```bash
-# 克隆项目
-git clone https://github.com/yourusername/openhand.git
+git clone https://github.com/Ricardo-M-L/openhand.git
 cd openhand
+cp .env.example .env                 # fill in at least one LLM key
+docker compose up --build
+# Web:    http://localhost:3000
+# Server: http://localhost:3001
+```
 
-# 安装依赖
+### Option B — Local dev (all workspaces)
+
+```bash
+git clone https://github.com/Ricardo-M-L/openhand.git
+cd openhand
+cp .env.example .env
 npm install
-
-# 构建项目
 npm run build
+npm run dev                          # CLI + server + web in parallel
 ```
 
-### CLI 使用
+Run only the CLI:
 
 ```bash
-# 启动交互式 CLI
-cd apps/cli
-npm start
-
-# 或者使用命令
-npm run chat
-
-# 快速提问
-npm run ask "帮我总结这个文件的内容"
-
-# 执行命令（沙箱内）
-npm run exec "ls -la"
+npm --workspace @openhand/cli start
 ```
 
-### Web 界面
+---
 
-```bash
-# 启动服务端
-cd apps/server
-npm run dev
+## Plugin system
 
-# 启动前端（另一个终端）
-cd apps/web
-npm run dev
+Plugins live in `plugins/*`. Each plugin declares a manifest, exports tools,
+and is picked up automatically at boot:
 
-# 访问 http://localhost:3000
+```text
+plugins/weather/
+├── manifest.json      # id, version, permissions, tool list
+├── src/index.ts       # register(tools) { ... }
+└── tests/
 ```
 
-### 配置
+Full guide: **[`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md)**.
 
-```bash
-# 配置 LLM
-cd apps/cli
-npm run config -- --setup
+---
 
-# 或者手动编辑配置文件
-~/.openhand/config.json
-```
+## Documentation
 
-## 🏗️ 架构
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — modules, data flow, diagrams.
+- [`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md) — ship a plugin in 10 minutes.
+- [`docs/SECURITY_MODEL.md`](./docs/SECURITY_MODEL.md) — sandbox, policy, approvals.
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md) — dev setup, tests, PR flow.
+- [`SECURITY.md`](./SECURITY.md) — how to report a vulnerability.
+- [`CHANGELOG.md`](./CHANGELOG.md) — what shipped in each release.
 
-```
-openhand/
-├── packages/
-│   ├── core/          # 核心引擎
-│   ├── sandbox/       # 安全沙箱
-│   └── tools/         # 工具集合
-├── apps/
-│   ├── cli/           # CLI 客户端
-│   ├── server/        # Web 服务端
-│   └── web/           # Web 前端
-└── plugins/           # 插件目录
-```
+---
 
-## 🔧 支持的 LLM 提供商
+## Contributing
 
-| 提供商 | 状态 | 说明 |
-|--------|------|------|
-| OpenAI | ✅ | GPT-4, GPT-3.5 |
-| Claude | ✅ | Claude 3 系列 |
-| Ollama | ✅ | 本地模型支持 |
-| 自定义 | ✅ | 兼容 OpenAI API |
+PRs are welcome — see [`CONTRIBUTING.md`](./CONTRIBUTING.md). Good first issues
+are labelled `good first issue` on the tracker. If you want to add an LLM
+provider or a tool plugin, start there.
 
-## 📋 内置工具
+---
 
-| 工具 | 描述 | 沙箱 |
-|------|------|------|
-| file_read | 读取文件 | ✅ |
-| file_write | 写入文件 | ✅ |
-| file_list | 列出目录 | ✅ |
-| file_search | 搜索文件 | ✅ |
-| shell_exec | 执行 Shell | ✅ |
-| browser_fetch | 网页请求 | ❌ |
-| browser_extract | 提取内容 | ❌ |
-| browser_search | 网络搜索 | ❌ |
-| email_send | 发送邮件 | ❌ |
-| email_read | 读取邮件 | ❌ |
-| system_info | 系统信息 | ❌ |
-| system_note | 笔记管理 | ❌ |
+## License
 
-## 🔐 安全特性
-
-- **沙箱隔离** - 所有工具在隔离环境运行
-- **权限控制** - 细粒度的权限管理
-- **审批流程** - 敏感操作需确认
-- **审计日志** - 完整操作记录
-- **资源限制** - CPU/内存/时间限制
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 📜 许可证
-
-MIT License © 2024 OpenHand Team
+[MIT](./LICENSE) — use it, fork it, ship it. Attribution appreciated but not
+required.
