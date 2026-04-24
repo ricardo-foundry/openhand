@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml/badge.svg)](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml)
+[![Status: actively developed](https://img.shields.io/badge/status-actively%20developed-success.svg)](./CHANGELOG.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![npm workspaces](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker ready](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
@@ -35,19 +36,32 @@ a weekend.
 
 ## Features
 
-- **Provider-neutral LLM layer** — swap OpenAI, Anthropic, Ollama, or any
-  OpenAI-compatible endpoint through one `LLMProvider` interface.
+- **Provider-neutral LLM layer** — OpenAI, Anthropic Messages, and Ollama
+  ship in-box through one `LLMProvider` interface, selected at runtime by
+  `LLM_PROVIDER=...`. Every wire format is a tiny `fetch` wrapper — no
+  vendor SDK, no drift.
+- **Batteries-included client** — `LLMClient` wraps any provider with
+  exponential-backoff retry, AbortController timeouts, a FIFO token-bucket
+  rate limiter, and a cost tracker that accumulates prompt/completion
+  tokens across calls.
 - **Sandboxed tool execution** — filesystem, shell, network, and email tools
   all run through `packages/sandbox` with configurable roots, timeouts, and
-  output limits.
+  output limits. Shell metacharacters (`$()`, `;`, `|`, `>`) are rejected
+  at parse time so a badly-trained model can't shell-escape.
 - **Policy-gated actions** — allow, deny, or require human approval per tool
-  and per argument pattern.
-- **Plugin-first** — drop a folder under `plugins/`, declare a manifest,
-  register tools.
-- **Three interfaces** — interactive CLI, React + Tailwind web UI, and a
-  thin HTTP server you can embed.
+  and per argument pattern. The default policy is auditable in
+  `packages/sandbox/src/policy.ts`.
+- **Plugin-first with hot reload** — drop a folder under `plugins/`, declare
+  an `openhand` manifest in `package.json`, and `PluginLoader` discovers it.
+  `loader.watch()` uses `fs.watch` so edits reload without restarting.
+- **Interactive CLI REPL** — `openhand chat` gives you `/help`, `/model`,
+  `/reset`, `/save`, `/exit`, a native ANSI spinner, ctrl+c handling, and
+  persistence to `~/.openhand/config.json` — all with zero extra deps.
+- **Live web task stream** — `GET /api/tasks/:id/stream` is a real SSE feed
+  with `Last-Event-ID` resume and a per-task ring buffer. `apps/web`'s
+  Tasks page tails it in realtime.
 - **Monorepo with npm workspaces** — `packages/{core,tools,sandbox,llm}` and
-  `apps/{cli,server,web}`, each independently testable.
+  `apps/{cli,server,web}`, each independently testable (120+ tests).
 - **Dockerized web UI** — production-ready `apps/web` image served by nginx.
 
 ---
@@ -112,25 +126,63 @@ npm run build
 npm run dev                          # CLI + server + web in parallel
 ```
 
-Run only the CLI:
+Run only the CLI REPL:
 
 ```bash
 npm --workspace @openhand/cli start
+# or, after `npm run build`:
+openhand chat
+```
+
+Inside the REPL:
+
+```text
+> /help
+Available commands:
+  /help             show this list
+  /model <name>     switch model (also accepts "<provider>:<model>")
+  /reset            clear history for the current session
+  /save             persist config to ~/.openhand/config.json
+  /exit             leave the REPL
+> /model anthropic:claude-3-5-sonnet-latest
+switched to anthropic/claude-3-5-sonnet-latest
+> summarize CHANGELOG.md
+(spinner...)
+```
+
+Watch a task from the web UI:
+
+```bash
+# Terminal 1
+npm run dev:server
+# Terminal 2
+curl -N http://localhost:3001/api/tasks/demo-1/stream &
+curl -X POST http://localhost:3001/api/tasks/demo-1/_demo
+# -> streams 4 SSE events (pending → running → running → completed)
 ```
 
 ---
 
 ## Plugin system
 
-Plugins live in `plugins/*`. Each plugin declares a manifest, exports tools,
-and is picked up automatically at boot:
+Plugins live in `plugins/*`. Each plugin declares a manifest inside
+`package.json` under the `openhand` key, exports tools, and is picked up
+automatically at boot:
 
 ```text
-plugins/weather/
-├── manifest.json      # id, version, permissions, tool list
-├── src/index.ts       # register(tools) { ... }
-└── tests/
+plugins/calculator/
+├── package.json       # { "openhand": { "id": "calculator", "entry": "./index.js" } }
+├── index.js           # module.exports = { tools: [...], onEnable() {...} }
+├── README.md
+└── tests/calculator.test.js
 ```
+
+Two example plugins ship in-tree:
+
+- **`plugins/weather`** — minimal mock API to show the shape of a plugin.
+- **`plugins/calculator`** — safe arithmetic evaluator (no `eval`, no
+  `new Function`) that agents can call for math. 10 tests including
+  `$()`/assignment/globals rejection.
 
 Full guide: **[`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md)**.
 

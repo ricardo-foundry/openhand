@@ -2,6 +2,7 @@ import { Agent, AgentConfig, LLMConfig, Session, Message, Task } from '@openhand
 import { SecureSandbox } from '@openhand/sandbox';
 import { createTools } from '@openhand/tools';
 import { EventEmitter } from 'events';
+import { globalTaskStream } from './task-stream';
 
 interface AgentInstance {
   id: string;
@@ -82,9 +83,31 @@ Always prioritize security and ask for confirmation before performing destructiv
 
     // 转发事件
     agent.on('message', (msg) => this.emit('message', { agentId: id, message: msg }));
-    agent.on('task:start', (task) => this.emit('task:start', { agentId: id, task }));
-    agent.on('task:complete', (task) => this.emit('task:complete', { agentId: id, task }));
-    agent.on('task:error', (data) => this.emit('task:error', { agentId: id, ...data }));
+    agent.on('task:start', (task: Task) => {
+      this.emit('task:start', { agentId: id, task });
+      globalTaskStream.publish({
+        taskId: task.id,
+        status: 'running',
+        message: `task started: ${task.type}`,
+      });
+    });
+    agent.on('task:complete', (task: Task) => {
+      this.emit('task:complete', { agentId: id, task });
+      globalTaskStream.publish({
+        taskId: task.id,
+        status: 'completed',
+        message: `task completed: ${task.type}`,
+        data: task.result,
+      });
+    });
+    agent.on('task:error', (data: { taskId: string; error: string }) => {
+      this.emit('task:error', { agentId: id, ...data });
+      globalTaskStream.publish({
+        taskId: data.taskId,
+        status: 'failed',
+        message: data.error,
+      });
+    });
     agent.on('approval:required', (data) => this.emit('approval:required', { agentId: id, ...data }));
 
     return instance;

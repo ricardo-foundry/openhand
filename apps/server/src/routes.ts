@@ -1,7 +1,86 @@
 import { Router, Request, Response } from 'express';
 import { AgentManager } from './agent-manager';
+import { globalTaskStream, formatSseFrame, type TaskStatus } from './task-stream';
 
 export function setupRoutes(app: Router, agentManager: AgentManager) {
+  // SSE: live task events.
+  // Route shape: GET /api/tasks/:taskId/stream
+  // Clients receive every event published to the bus for that task, plus any
+  // backlog still in the ring buffer. Clients may resume after reconnect by
+  // sending `Last-Event-ID` (the browser sets this automatically for EventSource).
+  app.get('/api/tasks/:taskId/stream', (req: Request, res: Response) => {
+    const { taskId } = req.params;
+    const lastEventIdHeader = req.headers['last-event-id'];
+    const sinceId = typeof lastEventIdHeader === 'string'
+      ? Number.parseInt(lastEventIdHeader, 10)
+      : undefined;
+
+    res.status(200).set({
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache, no-transform',
+      connection: 'keep-alive',
+      // Disable proxy buffering (nginx etc.) so events reach the browser live.
+      'x-accel-buffering': 'no',
+    });
+    res.flushHeaders?.();
+
+    // Initial handshake so the client knows the stream is live.
+    res.write(`retry: 3000\n\n`);
+
+    // Replay backlog (if any).
+    for (const evt of globalTaskStream.history(
+      taskId,
+      Number.isFinite(sinceId) ? sinceId : undefined,
+    )) {
+      res.write(formatSseFrame(evt));
+    }
+
+    const unsubscribe = globalTaskStream.subscribe(taskId, evt => {
+      res.write(formatSseFrame(evt));
+      // If the task is done, close the stream politely.
+      if (evt.status === 'completed' || evt.status === 'failed') {
+        setTimeout(() => {
+          try { res.end(); } catch { /* already closed */ }
+        }, 50);
+      }
+    });
+
+    // Heartbeat every 15s so intermediate proxies don't time out the socket.
+    const heartbeat = setInterval(() => {
+      try {
+        res.write(`: ping ${Date.now()}\n\n`);
+      } catch {
+        /* client gone */
+      }
+    }, 15_000);
+    heartbeat.unref?.();
+
+    const cleanup = (): void => {
+      clearInterval(heartbeat);
+      unsubscribe();
+    };
+    req.on('close', cleanup);
+    req.on('error', cleanup);
+  });
+
+  // Dev helper: seed a synthetic task stream so the web UI has something
+  // to render without a real LLM roundtrip. Intentionally not documented
+  // in the public OpenAPI — gated by query param so curl tests can use it.
+  app.post('/api/tasks/:taskId/_demo', (req: Request, res: Response) => {
+    const { taskId } = req.params;
+    const statuses: TaskStatus[] = ['pending', 'running', 'running', 'completed'];
+    statuses.forEach((status, i) => {
+      setTimeout(() => {
+        globalTaskStream.publish({
+          taskId,
+          status,
+          message: `step ${i + 1}/${statuses.length}`,
+        });
+      }, i * 400);
+    });
+    res.json({ ok: true, taskId });
+  });
+
   // Health check
   app.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

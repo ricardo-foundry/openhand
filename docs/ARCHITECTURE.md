@@ -27,8 +27,8 @@ openhand/
 
 ```mermaid
 flowchart LR
-    CLI["apps/cli"]
-    WEB["apps/web"]
+    CLI["apps/cli<br/>(REPL)"]
+    WEB["apps/web<br/>(SSE client)"]
     SRV["apps/server"]
 
     CORE["packages/core"]
@@ -36,17 +36,45 @@ flowchart LR
     SBX["packages/sandbox"]
     LLM["packages/llm"]
 
+    LOADER["core.PluginLoader"]
+    CLIENT["llm.LLMClient<br/>(retry + ratelimit<br/>+ cost tracker)"]
+    REG["llm.registry<br/>resolveProvider()"]
+    BUS["server.TaskStreamBus"]
+
     PLUG["plugins/*"]
 
     CLI --> CORE
     SRV --> CORE
-    WEB -->|HTTP| SRV
+    SRV --> BUS
+    WEB -->|HTTP + SSE| SRV
 
-    CORE --> LLM
+    CORE --> LOADER
+    CORE --> CLIENT
+    CLIENT --> REG
+    REG --> LLM
     CORE --> TOOLS
     TOOLS --> SBX
-    PLUG -.manifest + register.-> CORE
+    LOADER -. scans .-> PLUG
 ```
+
+### Cross-cutting concerns shipped in the LLM layer
+
+- `LLMClient` is a decorator over any `LLMProvider` that adds retry with
+  exponential backoff, AbortController timeouts, a FIFO token-bucket rate
+  limiter, and a `CostTracker` that accumulates token usage across calls.
+- `resolveProvider()` reads `LLM_PROVIDER` and the per-provider env vars
+  (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OLLAMA_BASE_URL`, ...) and hands
+  back the right `LLMProvider` implementation. It never reaches for a vendor
+  SDK — each provider is a tiny `fetch` wrapper around the vendor's own
+  wire format.
+
+### Plugin loading
+
+`packages/core/src/plugin-loader.ts` walks the `plugins/` directory,
+reads each plugin's `package.json` `openhand` field as the manifest,
+and `require()`s the entry module. Plugins can be enabled/disabled at
+runtime, and `loader.watch()` tracks `fs.watch` changes for dev hot-reload
+(no `chokidar` dependency).
 
 ### Package responsibilities
 
@@ -148,5 +176,30 @@ Three common extension points, from least to most invasive:
 ## 6. Observability
 
 - Events from the agent loop are emitted on `core.Agent` via `eventemitter3`.
-- `apps/server` fans them out via SSE so `apps/web` can render live.
+- `apps/server`'s `TaskStreamBus` captures those events in a per-task ring
+  buffer (default 200 events) and fans them out over `GET /api/tasks/:id/stream`
+  as SSE. The route replays history from the ring buffer and honours
+  `Last-Event-ID` for reconnect, so `apps/web` can drop and re-open the
+  connection without gapping the log.
 - `LOG_LEVEL` and `LOG_JSON` env vars control log verbosity and format.
+
+### SSE wire format
+
+```text
+GET /api/tasks/:taskId/stream
+content-type: text/event-stream
+
+retry: 3000
+
+id: 0
+event: task
+data: {"id":0,"taskId":"...","status":"running","message":"...","timestamp":...}
+
+id: 1
+event: task
+data: {"id":1,"taskId":"...","status":"completed","data":{...}}
+```
+
+Every frame is a full JSON document on a single `data:` line. The stream
+closes cleanly once a `completed` or `failed` event is sent; clients that
+reconnect get backlog replay via the `Last-Event-ID` header.

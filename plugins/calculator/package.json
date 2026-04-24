@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-calculator",
+  "version": "1.0.0",
+  "description": "Safe arithmetic expression evaluator for OpenHand",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "calculator", "math"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "calculator",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Evaluate arithmetic expressions without `eval()`",
+    "permissions": []
+  }
+}
