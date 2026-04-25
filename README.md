@@ -426,3 +426,17 @@ an LLM provider or a tool plugin, start there.
 
 [MIT](./LICENSE) — use it, fork it, ship it. Attribution appreciated but
 not required.
+
+---
+
+## Sister projects
+
+OpenHand ships alongside two other small, MIT-licensed projects from
+the same shop. If the "small things that fit in your head" posture
+resonates, you'll probably like these too:
+
+- **[Terminal Quest CLI](https://github.com/ricardo-foundry/terminal-quest-cli)** — a multilingual terminal RPG. `npx terminal-quest-cli` and you're playing.
+- **[Canvas Vampire Survivors](https://github.com/ricardo-foundry/canvas-vampire-survivors)** — a zero-dependency HTML5 Canvas roguelite. [Live demo](https://ricardo-foundry.github.io/canvas-vampire-survivors/).
+
+See [`docs/CROSSPROMO.md`](./docs/CROSSPROMO.md) for the canonical
+footer block (kept in sync across all three repos).
