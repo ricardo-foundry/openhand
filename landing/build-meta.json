@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T08:33:44.625Z",
+  "generatedAt": "2026-04-25T09:11:30.247Z",
   "lastCommit": {
-    "sha": "36bbccd75b26fc12fed7aac4ebe827138d95ffbf",
-    "shortSha": "36bbccd",
-    "subject": "docs(iter-17): final consolidation — JOURNEY, badges, support range, CHANGELOG links",
-    "date": "2026-04-25T16:28:07+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/36bbccd75b26fc12fed7aac4ebe827138d95ffbf"
+    "sha": "7d52e9c15d52526071eee46d83d0ab9018fe31e2",
+    "shortSha": "7d52e9c",
+    "subject": "feat(iter-19): MCP adapter — spawn-and-talk JSON-RPC over stdio (no SDK)",
+    "date": "2026-04-25T17:05:34+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/7d52e9c15d52526071eee46d83d0ab9018fe31e2"
   },
   "tests": {
-    "unit": 214,
+    "unit": 231,
     "e2e": 18,
     "integration": 35,
-    "plugins": 70,
+    "plugins": 82,
     "bench": 10,
-    "total": 347
+    "total": 376
   },
   "audit": {
     "vulnerabilities": 0
   },
-  "plugins": 8,
+  "plugins": 10,
   "providers": [
     "openai",
     "anthropic",

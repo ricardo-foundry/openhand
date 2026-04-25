@@ -16,6 +16,7 @@ If you only have time to read one, read **[01-hello-world](./01-hello-world.md)*
 | 06 | [Multi-agent orchestration](./06-multi-agent-orchestration.md)  | Router + worker agents in ~80 lines using `core` + `llm`.         | 15 min   |
 | 07 | [Streaming + tool use](./07-streaming-tool-use.md)              | Drain `stream()` and run tools mid-flight without buffering.      | 15 min   |
 | 08 | [MCP integration](./08-mcp-integration.md)                      | Bridge any Model Context Protocol server's tools into OpenHand.   | 10 min   |
+| 09 | [Quick plugin (`plugin:new`)](./09-quick-plugin.md)             | Scaffold + ship a fresh plugin end-to-end with `npm run plugin:new`. | 5 min    |
 
 ## Companion runnables (no separate write-up yet)
 

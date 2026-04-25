@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-fortune-cookie",
+  "version": "1.0.0",
+  "description": "Pull a one-liner aphorism from a 200-line static library — uplifting, skeptical, or philosophical. No LLM call.",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "fortune", "aphorism", "fun"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "fortune-cookie",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Return one of 200 baked-in aphorisms in your chosen mood — uplifting, skeptical, or philosophical.",
+    "permissions": []
+  }
+}
