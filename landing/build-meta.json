@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T07:09:41.520Z",
+  "generatedAt": "2026-04-25T07:11:23.445Z",
   "lastCommit": {
-    "sha": "38ca757bbcdb86e59dfb61432f50504ee059b99c",
-    "shortSha": "38ca757",
-    "subject": "feat(iter-12): cookbook 06/07, web-scraper plugin, runtime onChunk + dispose, scaffolder, in-browser demo",
-    "date": "2026-04-25T14:52:05+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/38ca757bbcdb86e59dfb61432f50504ee059b99c"
+    "sha": "62ee54e8650a375b2424fb288f2486fbe0d83e17",
+    "shortSha": "62ee54e",
+    "subject": "chore(v0.6): runnable cookbook examples, label bootstrap, first-PR walkthrough",
+    "date": "2026-04-25T15:11:15+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/62ee54e8650a375b2424fb288f2486fbe0d83e17"
   },
   "tests": {
     "unit": 159,
