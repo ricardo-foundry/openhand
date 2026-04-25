@@ -13,6 +13,8 @@
     "dev:web": "cd apps/web && npm run dev",
     "dev:cli": "cd apps/cli && npm run dev",
     "build": "npm run build --workspaces",
+    "plugin:new": "node scripts/plugin-new.js",
+    "ollama:check": "bash scripts/check-ollama.sh",
     "test": "npm run test --workspaces && npm run test:plugins && npm run test:integration && npm run test:e2e && npm run bench",
     "test:unit": "npm run test --workspaces",
     "test:plugins": "node --test plugins/*/tests/*.test.js",

@@ -79,6 +79,29 @@ export class InMemoryCostTracker implements CostTracker {
   }
 }
 
+/**
+ * Per-chunk progress info passed to `onChunk`. `totalChars` is the running
+ * length of accumulated `delta`s — handy for "X chars streamed" indicators
+ * without buffering on the caller side.
+ */
+export interface StreamProgress {
+  /** This chunk's text delta. May be empty on terminal control frames. */
+  delta: string;
+  /** Sum of all deltas seen so far in this stream (including this one). */
+  totalChars: number;
+  /** True only on the terminal frame. */
+  finished: boolean;
+  /** Present on the terminal frame when the provider reported usage. */
+  usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
+}
+
+export type StreamProgressCallback = (progress: StreamProgress) => void;
+
+export interface StreamCallOptions {
+  /** Override the client-level `onChunk` for this call. */
+  onChunk?: StreamProgressCallback;
+}
+
 export interface LLMClientOptions {
   /** Wrapped provider. */
   provider: LLMProvider;
@@ -90,6 +113,15 @@ export interface LLMClientOptions {
   timeoutMs?: number;
   /** Cost tracker. Defaults to a fresh `InMemoryCostTracker`. */
   costTracker?: CostTracker;
+  /**
+   * Default progress callback for `stream()`. Invoked once per chunk with
+   * `{ delta, totalChars, finished, usage? }`. Per-call callbacks (passed
+   * via the second argument of `stream`) override this default.
+   *
+   * Errors thrown from the callback are swallowed: a UI hook must never
+   * be able to abort the stream.
+   */
+  onChunk?: StreamProgressCallback;
 }
 
 /**
@@ -117,12 +149,14 @@ export class LLMClient implements LLMProvider {
   private readonly retry: RetryPolicy;
   private readonly timeoutMs: number | undefined;
   private readonly bucket: TokenBucket | undefined;
+  private readonly defaultOnChunk: StreamProgressCallback | undefined;
 
   constructor(opts: LLMClientOptions) {
     this.provider = opts.provider;
     this.info = opts.provider.info;
     this.costTracker = opts.costTracker ?? new InMemoryCostTracker();
     this.timeoutMs = opts.timeoutMs;
+    this.defaultOnChunk = opts.onChunk;
     this.retry = {
       maxAttempts: opts.retry?.maxAttempts ?? 3,
       initialDelayMs: opts.retry?.initialDelayMs ?? 500,
@@ -144,13 +178,34 @@ export class LLMClient implements LLMProvider {
     });
   }
 
-  async *stream(request: CompletionRequest): AsyncIterable<StreamChunk> {
+  async *stream(
+    request: CompletionRequest,
+    options: StreamCallOptions = {},
+  ): AsyncIterable<StreamChunk> {
     // Streaming is typically not retried (would produce duplicate deltas),
     // but we still enforce rate limit + timeout.
     if (this.bucket) await this.bucket.take();
     const signal = this.startTimeout();
+    const onChunk = options.onChunk ?? this.defaultOnChunk;
+    let totalChars = 0;
     try {
       for await (const chunk of this.provider.stream(injectSignal(request, signal.signal))) {
+        totalChars += chunk.delta.length;
+        if (onChunk) {
+          // Errors from progress callbacks must never escape — they would
+          // poison the stream and the caller's iterator. Swallow + ignore.
+          try {
+            const progress: StreamProgress = {
+              delta: chunk.delta,
+              totalChars,
+              finished: Boolean(chunk.finishReason),
+            };
+            if (chunk.usage) progress.usage = chunk.usage;
+            onChunk(progress);
+          } catch {
+            /* swallow */
+          }
+        }
         if (chunk.finishReason && chunk.usage) {
           this.costTracker.record(chunk.usage);
         }

@@ -208,3 +208,54 @@ test('loadFromDir honors injected require so entry is never actually loaded from
   assert.equal(plugin!.manifest.id, 'virt');
   assert.equal(plugin!.module.tools?.length, 1);
 });
+
+test('dispose clears watcher, plugins, listeners, and fires onDisable', async () => {
+  const root = await scratchDir();
+  // Plugin records lifecycle calls onto a shared array we can inspect.
+  const calls: string[] = [];
+  makePluginDir(
+    root,
+    'dis',
+    { id: 'dis', version: '1.0.0' },
+    `module.exports = {
+       tools: [{ name: 'noop', execute: async () => 0 }],
+       onEnable() { (global.__disCalls ||= []).push('enable'); },
+       onDisable() { (global.__disCalls ||= []).push('disable'); },
+       onUninstall() { (global.__disCalls ||= []).push('uninstall'); },
+     };`,
+  );
+  // Re-route the plugin's lifecycle into our local array via globalThis.
+  (globalThis as any).__disCalls = calls;
+  const loader = new PluginLoader({ pluginsDir: root });
+  await loader.loadAll();
+  const stop = loader.watch();
+  assert.equal(loader.listPlugins().length, 1);
+
+  let listenerCalls = 0;
+  loader.on('plugin', () => { listenerCalls++; });
+
+  loader.dispose();
+
+  assert.equal(loader.listPlugins().length, 0, 'plugins map should be empty after dispose');
+  assert.ok(calls.includes('disable'), `onDisable should fire (calls=${calls.join(',')})`);
+  assert.ok(calls.includes('uninstall'), `onUninstall should fire (calls=${calls.join(',')})`);
+  assert.equal(loader.listenerCount('plugin'), 0, 'listeners should be removed');
+  assert.equal(loader.listTools().length, 0);
+
+  // Re-calling dispose is safe (idempotent).
+  loader.dispose();
+
+  // Re-calling stop() (returned by watch()) is also safe.
+  stop();
+
+  delete (globalThis as any).__disCalls;
+  // Tear down listenerCalls var (unused after dispose) silences lint.
+  void listenerCalls;
+});
+
+test('dispose is safe to call before any loadAll()', async () => {
+  const root = await scratchDir();
+  const loader = new PluginLoader({ pluginsDir: root });
+  // No plugins, no watcher, no listeners — should still not throw.
+  assert.doesNotThrow(() => loader.dispose());
+});

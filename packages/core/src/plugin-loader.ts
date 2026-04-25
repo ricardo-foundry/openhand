@@ -314,6 +314,38 @@ export class PluginLoader extends EventEmitter {
     this.watcher = undefined;
   }
 
+  /**
+   * Release every external resource the loader is holding:
+   *   - close the fs watcher (if any),
+   *   - fire `onDisable` for every loaded plugin,
+   *   - drop the plugin map and the require cache for plugin entries,
+   *   - remove every event listener (so callers can GC the loader).
+   *
+   * Safe to call multiple times. After `dispose()`, the loader behaves as
+   * a freshly constructed one with no plugins and no listeners.
+   *
+   * Use this in long-running hosts (servers, CLIs that respawn workers,
+   * test suites) — `fs.watch` keeps the event loop alive on Linux, and
+   * not stopping it will quietly hold the process open.
+   */
+  dispose(): void {
+    this.stopWatch();
+    for (const plugin of this.plugins.values()) {
+      // Best-effort lifecycle: failing hooks shouldn't block shutdown.
+      if (plugin.enabled) {
+        fireLifecycle(plugin.module.onDisable);
+      }
+      fireLifecycle(plugin.module.onUninstall);
+      const entryPath = path.resolve(
+        plugin.dir,
+        plugin.manifest.entry ?? './index.js',
+      );
+      this.evictRequireCache(entryPath);
+    }
+    this.plugins.clear();
+    this.removeAllListeners();
+  }
+
   // `EventEmitter.on` is already what we want; this override just types it.
   override on(event: 'plugin', listener: Listener): this {
     return super.on(event, listener);

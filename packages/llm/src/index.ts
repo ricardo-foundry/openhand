@@ -21,6 +21,9 @@ export {
   type RetryPolicy,
   type RateLimitPolicy,
   type CostTracker,
+  type StreamProgress,
+  type StreamProgressCallback,
+  type StreamCallOptions,
 } from './client';
 export {
   LLMError,

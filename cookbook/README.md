@@ -6,13 +6,15 @@ repo root).
 
 If you only have time to read one, read **[01-hello-world](./01-hello-world.md)**.
 
-| #  | Recipe                                              | What you'll learn                                                | Setup    |
-|----|-----------------------------------------------------|-------------------------------------------------------------------|----------|
-| 01 | [Hello World](./01-hello-world.md)                  | Drive an agent end-to-end with zero API keys (Ollama).            | 5 min    |
-| 02 | [Writing a plugin](./02-writing-a-plugin.md)        | Ship a 60-line RSS plugin that the agent can call.                | 15 min   |
-| 03 | [Custom LLM provider](./03-custom-llm-provider.md)  | Point the LLM layer at any OpenAI-compatible local server.        | 10 min   |
-| 04 | [Sandboxed shell](./04-sandboxed-shell.md)          | Watch the sandbox reject `rm -rf $HOME` at parse time.            | 5 min    |
-| 05 | [Streaming UI](./05-streaming-ui.md)                | Tail the SSE task stream from a 30-line React component.          | 10 min   |
+| #  | Recipe                                                          | What you'll learn                                                | Setup    |
+|----|-----------------------------------------------------------------|-------------------------------------------------------------------|----------|
+| 01 | [Hello World](./01-hello-world.md)                              | Drive an agent end-to-end with zero API keys (Ollama).            | 5 min    |
+| 02 | [Writing a plugin](./02-writing-a-plugin.md)                    | Ship a 60-line RSS plugin that the agent can call.                | 15 min   |
+| 03 | [Custom LLM provider](./03-custom-llm-provider.md)              | Point the LLM layer at any OpenAI-compatible local server.        | 10 min   |
+| 04 | [Sandboxed shell](./04-sandboxed-shell.md)                      | Watch the sandbox reject `rm -rf $HOME` at parse time.            | 5 min    |
+| 05 | [Streaming UI](./05-streaming-ui.md)                            | Tail the SSE task stream from a 30-line React component.          | 10 min   |
+| 06 | [Multi-agent orchestration](./06-multi-agent-orchestration.md)  | Router + worker agents in ~80 lines using `core` + `llm`.         | 15 min   |
+| 07 | [Streaming + tool use](./07-streaming-tool-use.md)              | Drain `stream()` and run tools mid-flight without buffering.      | 15 min   |
 
 ## Companion runnables (no separate write-up yet)
 

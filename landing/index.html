@@ -177,6 +177,48 @@
     .meta-pill .meta-label { color: var(--muted); }
     .meta-pill .meta-value { color: var(--accent); font-weight: 600; }
     .meta-pill.meta-commit .meta-value { color: var(--link); }
+
+    /* In-browser demo: a chat shell driven by a tiny in-page MockProvider
+       running on a Web Worker so the DOM stays responsive even while the
+       fake stream is flushing. Falls back to a plain link to the examples
+       directory if the browser doesn't support Worker (rare). */
+    .demo-shell {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px;
+      display: grid; grid-template-rows: auto 1fr auto; gap: 12px;
+      max-width: 760px; margin: 0 auto;
+    }
+    .demo-shell h3 { margin: 0; color: var(--accent); }
+    .demo-log {
+      background: var(--code); border: 1px solid var(--line);
+      border-radius: 8px; padding: 14px;
+      min-height: 180px; max-height: 320px; overflow-y: auto;
+      font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
+      font-size: 13px; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .demo-log .line.user { color: var(--link); }
+    .demo-log .line.bot  { color: var(--fg); }
+    .demo-log .line.meta { color: var(--muted); font-size: 0.9em; }
+    .demo-form { display: flex; gap: 8px; }
+    .demo-form input {
+      flex: 1; background: var(--code); color: var(--fg);
+      border: 1px solid var(--line); border-radius: 8px;
+      padding: 10px 12px; font-size: 14px;
+      font-family: inherit;
+    }
+    .demo-form input:focus { outline: none; border-color: var(--accent); }
+    .demo-form button {
+      background: var(--accent); color: #0b0f14;
+      border: 0; border-radius: 8px;
+      padding: 10px 18px; font-weight: 600; cursor: pointer; font-size: 14px;
+    }
+    .demo-form button:disabled { opacity: 0.5; cursor: progress; }
+    .demo-fallback {
+      color: var(--muted); font-size: 0.92em;
+      background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px;
+    }
   </style>
 </head>
 <body>
@@ -187,6 +229,7 @@
     <div>
       <a href="#features">Features</a>
       <a href="#architecture">Architecture</a>
+      <a href="#demo">Demo</a>
       <a href="#quickstart">Quickstart</a>
       <a href="#cookbook">Cookbook</a>
       <a href="https://github.com/ricardo-foundry/openhand">GitHub →</a>
@@ -209,7 +252,7 @@
       <img src="https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white" alt="Node 20+" />
       <img src="https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white" alt="npm workspaces" />
       <img src="https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white" alt="Docker ready" />
-      <img src="https://img.shields.io/badge/tests-252%20total-success.svg" alt="252 total tests" />
+      <img src="https://img.shields.io/badge/tests-273%20total-success.svg" alt="273 total tests" />
       <img src="https://img.shields.io/badge/runtime%20smoke-passing-success.svg" alt="Runtime smoke passing" />
       <img src="https://img.shields.io/badge/Issues-welcome-brightgreen.svg" alt="Issues welcome" />
     </div>
@@ -320,7 +363,7 @@ flowchart LR
     SBX["sandbox<br/>spawn · policy · checks"]
     LLM["llm<br/>providers + LLMClient"]
   end
-  PLUG["plugins/*<br/>(weather, calculator, code-reviewer,<br/>rss-digest, file-organizer, git-summary)"]
+  PLUG["plugins/*<br/>(weather, calculator, code-reviewer,<br/>rss-digest, file-organizer, git-summary, web-scraper)"]
   PROV[("OpenAI · Anthropic · Ollama · custom")]
 
   user --> CLI
@@ -334,6 +377,40 @@ flowchart LR
   LLM --> PROV
   PLUG -.discovers + registers tools.-> CORE
       </pre>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <h2>Try the demo (in your browser)</h2>
+    <p class="muted">
+      Below is a tiny chat UI driven by the same <code>MockProvider</code> that
+      <code>examples/hello-world.ts</code> defaults to — running on a Web Worker
+      so it streams chunk-by-chunk without blocking the page. Nothing leaves
+      your browser; there's no backend.
+    </p>
+    <div class="demo-shell" id="demo-shell">
+      <h3>OpenHand · MockProvider</h3>
+      <div class="demo-log" id="demo-log" aria-live="polite">
+        <div class="line meta">// Type a message and press send. Chunks arrive at ~6 chars/tick.</div>
+      </div>
+      <form class="demo-form" id="demo-form" autocomplete="off">
+        <input id="demo-input" type="text" placeholder="Ask anything (offline; deterministic mock)…" aria-label="Demo prompt" />
+        <button type="submit" id="demo-send">Send</button>
+      </form>
+      <noscript>
+        <div class="demo-fallback">
+          The in-browser demo needs JavaScript. Read
+          <a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/01-hello-world.md">Cookbook 01</a>
+          for the offline equivalent.
+        </div>
+      </noscript>
+      <div class="demo-fallback" id="demo-fallback" hidden>
+        Your browser doesn't support Web Workers. Run the equivalent locally:
+        <code>npx tsx examples/hello-world.ts</code> — see
+        <a href="https://github.com/ricardo-foundry/openhand/tree/main/examples">examples/</a>.
+      </div>
     </div>
   </div>
 </section>
@@ -380,13 +457,15 @@ curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
 <section id="cookbook">
   <div class="wrap">
     <h2>Cookbook</h2>
-    <p class="muted">Five short recipes. Each one is &lt;400 words, code-first.</p>
+    <p class="muted">Seven short recipes. Each one is &lt;500 words, code-first.</p>
     <div class="features">
       <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/01-hello-world.md">01 · Hello World</a></h3><p>Drive a real agent end-to-end with zero API keys via Ollama.</p></div>
-      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/02-writing-a-plugin.md">02 · Writing a plugin</a></h3><p>Ship a 60-line RSS plugin the agent can call.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/02-writing-a-plugin.md">02 · Writing a plugin</a></h3><p>Ship a plugin the agent can call. Use <code>npm run plugin:new</code> to scaffold.</p></div>
       <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/03-custom-llm-provider.md">03 · Custom LLM provider</a></h3><p>Point the LLM layer at any OpenAI-compatible local server.</p></div>
       <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/04-sandboxed-shell.md">04 · Sandboxed shell</a></h3><p>Watch the sandbox reject <code>rm -rf $HOME</code> at parse time.</p></div>
       <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/05-streaming-ui.md">05 · Streaming UI</a></h3><p>Tail the SSE task stream from a 30-line React component.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/06-multi-agent-orchestration.md">06 · Multi-agent orchestration</a></h3><p>Router + worker agents in ~80 lines of <code>core</code> + <code>llm</code>.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/07-streaming-tool-use.md">07 · Streaming + tool use</a></h3><p>Drain <code>stream()</code> while the model calls tools mid-flight.</p></div>
     </div>
   </div>
 </section>
@@ -466,6 +545,105 @@ curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
     },
     flowchart: { curve: 'basis', useMaxWidth: true },
   });
+
+  // --- in-browser demo (mock provider on a Web Worker) -------------------
+  // We model the same surface as packages/llm/src/mock.ts: a deterministic
+  // streaming provider that yields a few canned replies in chunks. Running
+  // it on a Worker means a slow stream never blocks the main thread, and
+  // it also serves as a realistic shape for "what does an SSE-style chat
+  // feel like" — without shipping a backend or burning an API key.
+  (function setupDemo() {
+    var form = document.getElementById('demo-form');
+    var input = document.getElementById('demo-input');
+    var send = document.getElementById('demo-send');
+    var log = document.getElementById('demo-log');
+    var fallback = document.getElementById('demo-fallback');
+    if (!form || !input || !send || !log) return;
+
+    if (typeof Worker !== 'function' || typeof Blob !== 'function') {
+      if (fallback) fallback.hidden = false;
+      send.disabled = true;
+      return;
+    }
+
+    // Inline worker source. Kept small so reviewers can audit it at a glance.
+    var workerSource = [
+      'var REPLIES = [',
+      '  "Hi! I am OpenHand running entirely in your browser via MockProvider — no API key, no network. Set LLM_PROVIDER=openai|anthropic|ollama in a real install to talk to a frontier model.",',
+      '  "Yes — packages/core, packages/llm, packages/sandbox, and packages/tools each have their own README and tests. Plugins live under plugins/ and are hot-reloaded by PluginLoader.",',
+      '  "The sandbox blocks shell metachars, NUL bytes, interpreter -c/-e flags, and path escapes at parse time. Run examples/shell-automation.ts to see exactly which cases it rejects.",',
+      '  "OpenHand ships an OpenAI / Anthropic / Ollama provider out of the box behind one LLMProvider interface. Adding a fourth is one file — see cookbook/03-custom-llm-provider.md."',
+      '];',
+      'var cursor = 0;',
+      'function pickReply(prompt) {',
+      '  var p = String(prompt || "").toLowerCase();',
+      '  if (p.indexOf("sandbox") >= 0) return REPLIES[2];',
+      '  if (p.indexOf("provider") >= 0 || p.indexOf("openai") >= 0 || p.indexOf("anthropic") >= 0 || p.indexOf("ollama") >= 0) return REPLIES[3];',
+      '  if (p.indexOf("structure") >= 0 || p.indexOf("package") >= 0 || p.indexOf("monorepo") >= 0) return REPLIES[1];',
+      '  var r = REPLIES[cursor % REPLIES.length]; cursor++; return r;',
+      '}',
+      'self.addEventListener("message", function (evt) {',
+      '  var prompt = evt && evt.data && evt.data.prompt;',
+      '  if (typeof prompt !== "string") return;',
+      '  var text = pickReply(prompt);',
+      '  var size = 6;',
+      '  var i = 0;',
+      '  function tick() {',
+      '    if (i >= text.length) { self.postMessage({ type: "done", totalChars: text.length }); return; }',
+      '    var slice = text.slice(i, i + size);',
+      '    i += size;',
+      '    self.postMessage({ type: "delta", delta: slice });',
+      '    setTimeout(tick, 28);',
+      '  }',
+      '  tick();',
+      '});',
+    ].join('\n');
+
+    var worker;
+    try {
+      var blob = new Blob([workerSource], { type: 'application/javascript' });
+      worker = new Worker(URL.createObjectURL(blob));
+    } catch (err) {
+      if (fallback) fallback.hidden = false;
+      send.disabled = true;
+      return;
+    }
+
+    function appendLine(text, role) {
+      var div = document.createElement('div');
+      div.className = 'line ' + (role || 'bot');
+      div.textContent = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+      return div;
+    }
+
+    var streaming = null;
+    worker.addEventListener('message', function (evt) {
+      var data = evt && evt.data;
+      if (!data) return;
+      if (data.type === 'delta' && streaming) {
+        streaming.textContent += data.delta;
+        log.scrollTop = log.scrollHeight;
+      } else if (data.type === 'done') {
+        appendLine('// stream done · ' + data.totalChars + ' chars · MockProvider', 'meta');
+        streaming = null;
+        send.disabled = false;
+        input.focus();
+      }
+    });
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var prompt = input.value.trim();
+      if (!prompt || streaming) return;
+      appendLine('> ' + prompt, 'user');
+      streaming = appendLine('', 'bot');
+      send.disabled = true;
+      input.value = '';
+      worker.postMessage({ prompt: prompt });
+    });
+  })();
 </script>
 </body>
 </html>

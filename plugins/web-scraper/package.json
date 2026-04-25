@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-web-scraper",
+  "version": "1.0.0",
+  "description": "Fetch a URL with SSRF protection, extract readable text via cheerio, and ask the LLM for a structured summary.",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "scraper", "summarise", "llm", "cheerio"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "web-scraper",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Scrape a page and summarise it with the LLM. SSRF-guarded.",
+    "permissions": ["network:http", "llm:chat"]
+  }
+}

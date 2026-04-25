@@ -3,6 +3,27 @@
 **Goal:** ship a plugin that fetches an RSS feed and returns the latest N items
 in a shape the agent can quote back. No build step, no extra deps.
 
+## Skip the boilerplate: `npm run plugin:new`
+
+The repo ships a tiny scaffolder so you can stop hand-writing manifests:
+
+```bash
+npm run plugin:new -- rss
+# Scaffolding plugins/rss/
+#   + plugins/rss/package.json
+#   + plugins/rss/index.js
+#   + plugins/rss/README.md
+#   + plugins/rss/tests/rss.test.js
+```
+
+You get a manifest, a one-tool stub, a README, and a passing 3-test suite
+under `node --test`. From there, replace the echo tool with whatever you
+actually need (the RSS reader below is a good template). Use `--force`
+to overwrite an existing directory; names must match `[a-z0-9-]+`.
+
+The script is plain Node — see `scripts/plugin-new.js`. It honours the
+"no runtime deps" rule: nothing to install, nothing to maintain.
+
 ## File layout
 
 ```text

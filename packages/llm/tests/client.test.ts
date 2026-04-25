@@ -169,3 +169,74 @@ test('InMemoryCostTracker.reset zeroes everything', () => {
   assert.equal(t.completionTokens, 0);
   assert.equal(t.totalTokens, 0);
 });
+
+test('LLMClient.stream invokes onChunk with running totals + finished flag', async () => {
+  const provider = fakeProvider({
+    stream: async function* () {
+      yield { delta: 'Hel' } satisfies StreamChunk;
+      yield { delta: 'lo' } satisfies StreamChunk;
+      yield {
+        delta: '!',
+        finishReason: 'stop',
+        usage: { promptTokens: 1, completionTokens: 2, totalTokens: 3 },
+      } satisfies StreamChunk;
+    },
+  });
+  const events: Array<{ delta: string; totalChars: number; finished: boolean }> = [];
+  const client = new LLMClient({
+    provider,
+    retry: { maxAttempts: 1 },
+    onChunk: ev => {
+      // Strip undefined `usage` so the assertion list is comparable.
+      events.push({ delta: ev.delta, totalChars: ev.totalChars, finished: ev.finished });
+    },
+  });
+  for await (const _ of client.stream(baseRequest)) {
+    /* drain */
+  }
+  assert.deepEqual(events, [
+    { delta: 'Hel', totalChars: 3, finished: false },
+    { delta: 'lo', totalChars: 5, finished: false },
+    { delta: '!', totalChars: 6, finished: true },
+  ]);
+});
+
+test('LLMClient.stream per-call onChunk overrides the client default', async () => {
+  const provider = fakeProvider({
+    stream: async function* () {
+      yield { delta: 'a' } satisfies StreamChunk;
+      yield { delta: 'b', finishReason: 'stop' } satisfies StreamChunk;
+    },
+  });
+  let defaultCalls = 0;
+  let perCallCalls = 0;
+  const client = new LLMClient({
+    provider,
+    retry: { maxAttempts: 1 },
+    onChunk: () => { defaultCalls++; },
+  });
+  for await (const _ of client.stream(baseRequest, { onChunk: () => { perCallCalls++; } })) {
+    /* drain */
+  }
+  assert.equal(defaultCalls, 0);
+  assert.equal(perCallCalls, 2);
+});
+
+test('LLMClient.stream swallows onChunk exceptions and keeps streaming', async () => {
+  const provider = fakeProvider({
+    stream: async function* () {
+      yield { delta: 'a' } satisfies StreamChunk;
+      yield { delta: 'b', finishReason: 'stop' } satisfies StreamChunk;
+    },
+  });
+  const collected: string[] = [];
+  const client = new LLMClient({
+    provider,
+    retry: { maxAttempts: 1 },
+    onChunk: () => { throw new Error('UI listener crashed'); },
+  });
+  for await (const c of client.stream(baseRequest)) {
+    collected.push(c.delta);
+  }
+  assert.deepEqual(collected, ['a', 'b']);
+});
