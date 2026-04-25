@@ -19,7 +19,7 @@
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Monorepo](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Tests](https://img.shields.io/badge/tests-140%20unit%20%2B%2016%20e2e-success.svg)](./CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-252%20total-success.svg)](./CHANGELOG.md)
 [![npm audit](https://img.shields.io/badge/npm%20audit-0%20vulns-success.svg)](./docs/RELEASE_v0.5.md)
 [![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
 [![Runtime smoke](https://img.shields.io/badge/runtime%20smoke-passing-success.svg)](./scripts/runtime-integration.sh)
@@ -41,9 +41,12 @@ in a weekend.
 
 | Axis | Status |
 | --- | --- |
-| Unit tests | **140** (`npm run test:unit`) |
+| Unit tests | **149** (`npm run test:unit`) — packages/* + apps/* |
+| Plugin tests | **44** (`npm run test:plugins`) — six in-tree plugins, each with a `tests/` folder |
+| Provider wire-format tests | **33** (`npm run test:integration`) — OpenAI / Anthropic / Ollama, headers + SSE + tool calls + retries |
 | End-to-end tests | **16** (`npm run test:e2e`) — SSE flow, CLI REPL, CLI subcommand spawn, plugin hot-reload, examples runtime |
 | Micro-benchmarks | **10** (`npm run bench`) — LLMClient, plugin loader, SSE ring buffer |
+| Total exercised | **252** (single `npm test` from the root) |
 | Runtime smoke | **`scripts/runtime-integration.sh`** — build → unit → e2e → bench → examples → CLI → server (one shot, exit 0 on green) |
 | TypeScript | **`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride`** across every workspace, `tsc --noEmit` clean |
 | Dependencies in core runtime | **4** (`eventemitter3`, `uuid`, `express`, `cors`). Zero SDK deps. |
@@ -190,10 +193,11 @@ boundary rules.
 - **Live web task stream** — `GET /api/tasks/:id/stream` is a real SSE
   feed with `Last-Event-ID` resume and a per-task ring buffer.
 - **Monorepo with npm workspaces** — `packages/{core,tools,sandbox,llm}`
-  and `apps/{cli,server,web}`, each independently testable. **140 unit tests
-  + 16 E2E + 10 benchmarks** across seven workspaces, all under strict
-  TypeScript, plus a single-shot runtime smoke (`scripts/runtime-integration.sh`)
-  that exercises every example, every CLI subcommand, and the SSE flow.
+  and `apps/{cli,server,web}`, each independently testable. **252 tests in total**
+  (149 unit + 44 plugin + 33 provider-wire integration + 16 E2E + 10 benchmarks)
+  across seven workspaces, all under strict TypeScript, plus a single-shot runtime
+  smoke (`scripts/runtime-integration.sh`) that exercises every example, every CLI
+  subcommand, and the SSE flow.
 
 ---
 
@@ -287,13 +291,19 @@ plugins/calculator/
 └── tests/calculator.test.js
 ```
 
-Three example plugins ship in-tree:
+Six example plugins ship in-tree:
 
 - **`plugins/weather`** — minimal mock API to show the shape of a plugin.
 - **`plugins/calculator`** — safe arithmetic evaluator (no `eval`, no
   `new Function`) that agents can call for math.
-- **`cookbook/02`** — 60-line RSS plugin you can copy-paste into
-  `plugins/rss/`.
+- **`plugins/code-reviewer`** — feed it a unified diff, get back a
+  structured Markdown review report.
+- **`plugins/rss-digest`** — fetch + summarise RSS feeds; the
+  cron-friendly piece of the digest example.
+- **`plugins/file-organizer`** — three-tool scan / propose / apply
+  flow for tidy file moves under approval.
+- **`plugins/git-summary`** — turn a `git log` into a PR description,
+  changelog entry, or release-notes block.
 
 Full guide: [`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md) and
 [`cookbook/02-writing-a-plugin.md`](./cookbook/02-writing-a-plugin.md).

@@ -160,6 +160,23 @@
       .quickstart-grid { grid-template-columns: 1fr; }
       nav.top a { margin-left: 10px; font-size: 0.88em; }
     }
+
+    /* Live build-meta pills (populated by inline JS + landing/build-meta.json) */
+    .build-meta {
+      display: inline-flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px; margin-top: 18px; max-width: 720px;
+    }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--accent-soft); border: 1px solid rgba(16,185,129,0.3);
+      font-size: 0.82em; color: var(--fg);
+      font-family: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, monospace;
+    }
+    .meta-pill.meta-commit { background: var(--panel); border-color: var(--line); color: var(--muted); }
+    .meta-pill .meta-label { color: var(--muted); }
+    .meta-pill .meta-value { color: var(--accent); font-weight: 600; }
+    .meta-pill.meta-commit .meta-value { color: var(--link); }
   </style>
 </head>
 <body>
@@ -192,7 +209,7 @@
       <img src="https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white" alt="Node 20+" />
       <img src="https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white" alt="npm workspaces" />
       <img src="https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white" alt="Docker ready" />
-      <img src="https://img.shields.io/badge/tests-140%20unit%20%2B%2016%20e2e-success.svg" alt="140 unit + 16 e2e tests" />
+      <img src="https://img.shields.io/badge/tests-252%20total-success.svg" alt="252 total tests" />
       <img src="https://img.shields.io/badge/runtime%20smoke-passing-success.svg" alt="Runtime smoke passing" />
       <img src="https://img.shields.io/badge/Issues-welcome-brightgreen.svg" alt="Issues welcome" />
     </div>
@@ -206,6 +223,15 @@
     <p class="muted" style="margin-top: 18px; font-size: 0.92em;">
       <code>git clone</code> → <code>npm i</code> → <code>npx tsx examples/hello-world.ts</code> — that's the whole onboarding.
     </p>
+
+    <!-- Live build-meta card. Filled in by .github/workflows/deploy-pages.yml
+         which writes landing/build-meta.json before publishing. -->
+    <div id="build-meta" class="build-meta" hidden>
+      <span class="meta-pill" data-meta="tests"></span>
+      <span class="meta-pill" data-meta="audit"></span>
+      <span class="meta-pill" data-meta="plugins"></span>
+      <span class="meta-pill meta-commit" data-meta="commit"></span>
+    </div>
   </div>
 </header>
 
@@ -294,7 +320,7 @@ flowchart LR
     SBX["sandbox<br/>spawn · policy · checks"]
     LLM["llm<br/>providers + LLMClient"]
   end
-  PLUG["plugins/*<br/>(weather, calculator, rss…)"]
+  PLUG["plugins/*<br/>(weather, calculator, code-reviewer,<br/>rss-digest, file-organizer, git-summary)"]
   PROV[("OpenAI · Anthropic · Ollama · custom")]
 
   user --> CLI
@@ -377,6 +403,55 @@ curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
 </footer>
 
 <script>
+  // --- live build-meta -----------------------------------------------------
+  // Reads landing/build-meta.json (written by deploy-pages.yml) and renders
+  // a few pill badges into the hero. Fails silently on any error so the
+  // page never breaks for visitors.
+  (function loadBuildMeta() {
+    fetch('./build-meta.json', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (meta) {
+        if (!meta) return;
+        var el = document.getElementById('build-meta');
+        if (!el) return;
+        var pills = el.querySelectorAll('[data-meta]');
+        var get = function (key) {
+          for (var i = 0; i < pills.length; i++) {
+            if (pills[i].getAttribute('data-meta') === key) return pills[i];
+          }
+          return null;
+        };
+        var totalTests = (meta.tests && meta.tests.total) || 0;
+        if (get('tests')) {
+          get('tests').innerHTML =
+            '<span class="meta-label">tests</span>' +
+            '<span class="meta-value">' + totalTests + '</span>';
+        }
+        var vulns = (meta.audit && meta.audit.vulnerabilities) || 0;
+        if (get('audit')) {
+          get('audit').innerHTML =
+            '<span class="meta-label">npm audit</span>' +
+            '<span class="meta-value">' + vulns + ' vulns</span>';
+        }
+        if (get('plugins')) {
+          get('plugins').innerHTML =
+            '<span class="meta-label">plugins</span>' +
+            '<span class="meta-value">' + (meta.plugins || 0) + '</span>';
+        }
+        if (get('commit') && meta.lastCommit) {
+          var sha = meta.lastCommit.shortSha || meta.lastCommit.sha || '';
+          var subj = (meta.lastCommit.subject || '').slice(0, 60);
+          var url = meta.lastCommit.url || '#';
+          get('commit').innerHTML =
+            '<span class="meta-label">last commit</span>' +
+            '<a class="meta-value" href="' + url + '">' + sha + '</a>' +
+            (subj ? ' <span class="meta-label">— ' + subj.replace(/[<>&]/g, '') + '</span>' : '');
+        }
+        el.hidden = false;
+      })
+      .catch(function () { /* swallow — page still renders */ });
+  })();
+
   mermaid.initialize({
     startOnLoad: true,
     theme: 'dark',

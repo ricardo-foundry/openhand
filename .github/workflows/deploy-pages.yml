@@ -44,6 +44,12 @@ jobs:
       - name: Generate TypeDoc API reference
         run: npm run docs:api
 
+      - name: Generate landing/build-meta.json
+        # Numbers come from grep / npm audit / git so they're impossible to
+        # drift from reality. The script writes landing/build-meta.json which
+        # the hero card on the landing page reads at runtime.
+        run: node scripts/build-meta.js
+
       - name: Assemble publish tree
         # The Pages artifact is a single directory. We stage landing/ at the
         # root and drop the generated API reference under /api/.

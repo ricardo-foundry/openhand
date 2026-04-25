@@ -1,0 +1,36 @@
+# OpenHand CODEOWNERS
+#
+# Anyone listed here is auto-requested for review on PRs touching their
+# subtree. The repo owner is the catch-all so a PR never sits unrouted.
+# Keep this list short — every entry costs maintainer attention.
+#
+# Syntax: <pattern> <handle> [more handles...]
+# Patterns are gitignore-style; the LAST matching line wins.
+
+# Catch-all — owner of the repo.
+*                                @Ricardo-M-L
+
+# Core runtime
+/packages/core/                  @Ricardo-M-L
+/packages/llm/                   @Ricardo-M-L
+/packages/sandbox/               @Ricardo-M-L
+/packages/tools/                 @Ricardo-M-L
+
+# Apps
+/apps/cli/                       @Ricardo-M-L
+/apps/server/                    @Ricardo-M-L
+/apps/web/                       @Ricardo-M-L
+
+# Plugins (community contributions land here — extra-friendly review).
+/plugins/                        @Ricardo-M-L
+
+# Build / release / CI surface — sensitive, owner-only.
+/.github/                        @Ricardo-M-L
+/scripts/                        @Ricardo-M-L
+/Dockerfile.server               @Ricardo-M-L
+/docker-compose.yml              @Ricardo-M-L
+
+# Docs are explicitly first-PR-friendly: owner reviews, no extra gating.
+/docs/                           @Ricardo-M-L
+/cookbook/                       @Ricardo-M-L
+/README.md                       @Ricardo-M-L

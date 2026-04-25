@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-git-summary",
+  "version": "1.0.0",
+  "description": "Turn a git log into a PR description / changelog block",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "git", "changelog", "pr-description", "llm"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "git-summary",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Summarise a `git log` into a PR description, changelog entry, or release-notes block.",
+    "permissions": ["llm:chat"]
+  }
+}

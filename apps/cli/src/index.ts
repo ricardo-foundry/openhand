@@ -10,6 +10,7 @@ import { OpenHandCLI } from './cli';
 import { configCommand } from './commands/config';
 import { chatCommand } from './commands/chat';
 import { taskCommand } from './commands/task';
+import { runInit } from './commands/init';
 import {
   runPluginsCommand,
   defaultPluginsDir,
@@ -56,6 +57,21 @@ program
     ].join('\n'),
   )
   .version('0.5.0');
+
+// Init command — drop a project-local .openhand/config.json and walk the
+// user through provider selection. Separate from `config --setup` (global).
+program
+  .command('init')
+  .description('Initialise a project-local `.openhand/config.json` (interactive provider picker)')
+  .option('-f, --force', 'Overwrite an existing config without prompting')
+  .option('-y, --yes', 'Skip the wizard and write defaults (mock provider)')
+  .action(async (options) => {
+    const code = await runInit({
+      force: !!options.force,
+      yes: !!options.yes,
+    });
+    process.exit(code);
+  });
 
 // Chat command — delegates to chatCommand (which uses the zero-dep runRepl).
 program

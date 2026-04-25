@@ -1,0 +1,25 @@
+name: PR labeler
+
+# Auto-apply path-based labels declared in .github/labeler.yml. Runs on
+# every PR open / sync. `pull_request_target` is required for forks since
+# the GITHUB_TOKEN on `pull_request` from a fork is read-only and labeling
+# wouldn't work otherwise — see actions/labeler README.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: Apply path-based labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler.yml
+          sync-labels: true

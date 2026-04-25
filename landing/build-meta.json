@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-04-25T06:02:43.847Z",
+  "lastCommit": {
+    "sha": "65a57ada82615f0caef21bca7de9e78e839de387",
+    "shortSha": "65a57ad",
+    "subject": "qa(iter-9): runtime smoke for examples + CLI + server, drop inquirer regression",
+    "date": "2026-04-25T13:47:32+08:00",
+    "url": "https://github.com/Ricardo-M-L/openhand/commit/65a57ada82615f0caef21bca7de9e78e839de387"
+  },
+  "tests": {
+    "unit": 149,
+    "e2e": 16,
+    "integration": 33,
+    "plugins": 44,
+    "bench": 10,
+    "total": 252
+  },
+  "audit": {
+    "vulnerabilities": 0
+  },
+  "plugins": 6,
+  "providers": [
+    "openai",
+    "anthropic",
+    "ollama",
+    "mock"
+  ]
+}

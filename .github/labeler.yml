@@ -1,0 +1,101 @@
+# Auto-label PRs by file path. Consumed by .github/workflows/labeler.yml
+# (which runs `actions/labeler@v5`).
+#
+# Each top-level key is a label; the value lists path globs that, when
+# matched by ANY changed file in the PR, apply the label.
+#
+# Keep labels orthogonal: one PR will commonly carry several. New
+# contributors get the `good first try` label whenever they touch
+# `plugins/`, `cookbook/`, `examples/`, or `docs/` since those are the
+# safest entry points.
+
+area/core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/core/**
+
+area/llm:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/llm/**
+
+area/sandbox:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/sandbox/**
+
+area/tools:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/tools/**
+
+area/cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/cli/**
+
+area/server:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/server/**
+
+area/web:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/web/**
+
+area/plugins:
+  - changed-files:
+      - any-glob-to-any-file:
+          - plugins/**
+
+area/landing:
+  - changed-files:
+      - any-glob-to-any-file:
+          - landing/**
+
+area/docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - cookbook/**
+          - "*.md"
+
+type/tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+          - "**/*.test.ts"
+          - "**/*.test.js"
+          - "**/*.bench.ts"
+
+type/ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/labeler.yml
+          - .github/CODEOWNERS
+          - scripts/**
+
+type/dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - package-lock.json
+          - "**/package.json"
+
+# Friendly labels to surface beginner-safe PRs in the maintainers' triage view.
+good first try:
+  - changed-files:
+      - any-glob-to-any-file:
+          - plugins/**
+          - cookbook/**
+          - examples/**
+          - docs/**
+
+# Pre-flight signals — spotted purely by file path, not by content.
+needs/security-review:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/sandbox/**
+          - .github/workflows/**
+          - Dockerfile.server

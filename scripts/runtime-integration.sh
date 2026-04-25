@@ -62,6 +62,16 @@ npm run test:unit > "$LOG_DIR/unit.log" 2>&1 || { tail -40 "$LOG_DIR/unit.log"; 
 unit_count=$(grep -E '^# tests ' "$LOG_DIR/unit.log" | awk '{ s += $3 } END { print s }')
 ok "unit (${unit_count} tests)"
 
+step plugins "npm run test:plugins"
+npm run test:plugins > "$LOG_DIR/plugins.log" 2>&1 || { tail -40 "$LOG_DIR/plugins.log"; fail "plugins"; }
+plugin_count=$(grep -E '^# tests ' "$LOG_DIR/plugins.log" | awk '{ s += $3 } END { print s }')
+ok "plugins (${plugin_count} tests)"
+
+step integration "npm run test:integration"
+npm run test:integration > "$LOG_DIR/integration.log" 2>&1 || { tail -40 "$LOG_DIR/integration.log"; fail "integration"; }
+integration_count=$(grep -E '^# tests ' "$LOG_DIR/integration.log" | awk '{ s += $3 } END { print s }')
+ok "integration (${integration_count} tests)"
+
 step e2e "npm run test:e2e"
 npm run test:e2e > "$LOG_DIR/e2e.log" 2>&1 || { tail -40 "$LOG_DIR/e2e.log"; fail "e2e"; }
 e2e_count=$(grep -E '^# tests ' "$LOG_DIR/e2e.log" | awk '{ s += $3 } END { print s }')
@@ -155,6 +165,6 @@ wait "$SERVER_PID" 2>/dev/null || true
 trap - EXIT
 ok server
 
-total=$((unit_count + e2e_count + bench_count))
+total=$((unit_count + plugin_count + integration_count + e2e_count + bench_count))
 printf '\n=== runtime-integration: PASS — %d tests + 5 examples + CLI + server ===\n' "$total"
 printf '    log dir: %s\n' "$LOG_DIR"
