@@ -5,13 +5,25 @@ the shell, the network, email). We take security reports seriously.
 
 ## Supported versions
 
-| Version | Supported     |
-| ------- | ------------- |
-| 0.1.x   | Yes (current) |
-| < 0.1   | No            |
+We follow a "current minor + previous minor" support window during the 0.x
+series. Once a 1.x release ships, the policy formalises into "current minor
+plus the previous minor for six months."
 
-Once we cut a 1.x release, the previous minor line will receive security
-fixes for six months.
+| Version line | Status        | Security fixes                       |
+| ------------ | ------------- | ------------------------------------ |
+| 0.8.x        | Current (rc)  | Yes — actively developed             |
+| 0.7.x        | Maintained    | Yes — backported from `main`         |
+| 0.6.x        | Maintained    | Yes — backported from `main`         |
+| 0.5.x        | End of life   | Critical only, on a best-effort basis |
+| 0.4.x        | End of life   | No                                   |
+| 0.3.x        | End of life   | No                                   |
+| 0.2.x        | End of life   | No                                   |
+| 0.1.x        | End of life   | No                                   |
+| < 0.1        | Pre-release   | No                                   |
+
+Pre-1.0 minors do not guarantee API compatibility; we will document any
+breaking change in `CHANGELOG.md`. After 1.0, the previous minor line will
+receive security fixes for six months from the date the next minor ships.
 
 ## Reporting a vulnerability
 
