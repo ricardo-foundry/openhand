@@ -67,6 +67,11 @@ npm run test:plugins > "$LOG_DIR/plugins.log" 2>&1 || { tail -40 "$LOG_DIR/plugi
 plugin_count=$(grep -E '^# tests ' "$LOG_DIR/plugins.log" | awk '{ s += $3 } END { print s }')
 ok "plugins (${plugin_count} tests)"
 
+step examples-tests "npm run test:examples"
+npm run test:examples > "$LOG_DIR/examples-tests.log" 2>&1 || { tail -40 "$LOG_DIR/examples-tests.log"; fail "examples-tests"; }
+examples_test_count=$(grep -E '^# tests ' "$LOG_DIR/examples-tests.log" | awk '{ s += $3 } END { print s }')
+ok "examples-tests (${examples_test_count} tests)"
+
 step integration "npm run test:integration"
 npm run test:integration > "$LOG_DIR/integration.log" 2>&1 || { tail -40 "$LOG_DIR/integration.log"; fail "integration"; }
 integration_count=$(grep -E '^# tests ' "$LOG_DIR/integration.log" | awk '{ s += $3 } END { print s }')
@@ -85,7 +90,7 @@ ok "bench (${bench_count} tests)"
 require_tsx
 
 step examples "examples/*.ts (each must exit 0, stderr empty)"
-for ex in hello-world.ts agent-shell-loop.ts shell-automation.ts ollama-local.ts rss-digest-agent.ts; do
+for ex in hello-world.ts agent-shell-loop.ts shell-automation.ts ollama-local.ts rss-digest-agent.ts router-worker.ts streaming-tool-use.ts; do
   out="$LOG_DIR/example-${ex%.ts}.out"
   err="$LOG_DIR/example-${ex%.ts}.err"
   if "$TSX" "examples/$ex" > "$out" 2> "$err"; then
@@ -165,6 +170,6 @@ wait "$SERVER_PID" 2>/dev/null || true
 trap - EXIT
 ok server
 
-total=$((unit_count + plugin_count + integration_count + e2e_count + bench_count))
-printf '\n=== runtime-integration: PASS — %d tests + 5 examples + CLI + server ===\n' "$total"
+total=$((unit_count + plugin_count + examples_test_count + integration_count + e2e_count + bench_count))
+printf '\n=== runtime-integration: PASS — %d tests + 7 examples + CLI + server ===\n' "$total"
 printf '    log dir: %s\n' "$LOG_DIR"

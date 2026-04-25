@@ -231,3 +231,66 @@ test('scrape_summary tool errors clearly when context.llm is missing', async () 
     /requires context\.llm/,
   );
 });
+
+// ---------------------------------------------------------------------------
+// Higher-fidelity smoke: the plugin is normally invoked from an agent that
+// hands it the canonical `@openhand/llm` MockProvider via context.llm. This
+// test mirrors that path end-to-end without a network call:
+//
+//   `scrape_summary` tool  →  plugin.runSummary  →  fetchBounded (fake fetch
+//   returning real example.com-style HTML)  →  extractText  →  LLMClient
+//   over MockProvider  →  parseSummary  →  structured result.
+//
+// If anything in that chain regresses (export shape, prompt format, Mock
+// stream hookup, JSON parser), this test fails before the wider e2e grid.
+// ---------------------------------------------------------------------------
+test('scrape_summary tool: real MockProvider summarises example.com', async () => {
+  const { LLMClient, MockProvider } = require('@openhand/llm');
+
+  // Pre-baked structured response — what a well-behaved frontier model
+  // would emit for the schema we declare in `buildSummaryMessages`.
+  const mock = new MockProvider({
+    reply: JSON.stringify({
+      title: 'Example Domain',
+      summary:
+        'Example.com is the IETF reserved domain reused as a stable demo target. ' +
+        'OpenHand uses it as the canonical fixture for scraper smoke tests so the ' +
+        'pipeline is deterministic and offline.',
+      bullets: ['IETF reserved', 'Stable demo target', 'Used in OpenHand smoke tests'],
+      entities: ['IETF', 'OpenHand'],
+      confidence: 0.9,
+    }),
+    label: 'mock-summariser',
+  });
+  const client = new LLMClient({ provider: mock, retry: { maxAttempts: 1 } });
+
+  // The plugin tool expects a context whose `llm` quacks like LLMClient.
+  const tool = plugin.tools.find(t => t.name === 'scrape_summary');
+  const original = globalThis.fetch;
+  globalThis.fetch = makeFetch({
+    body: SAMPLE_HTML,
+    url: 'https://example.com/',
+  });
+  let out;
+  try {
+    out = await tool.execute(
+      { url: 'https://example.com/', focus: 'what it is, why we test against it', model: 'mock-1' },
+      { llm: client },
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+
+  // The full chain ran:
+  assert.equal(mock.calls, 1, 'MockProvider.complete should fire exactly once');
+  assert.equal(out.url, 'https://example.com/');
+  assert.equal(out.summary.title, 'Example Domain');
+  assert.match(out.summary.summary, /reserved domain/);
+  assert.ok(out.summary.bullets.length >= 3);
+  assert.ok(out.summary.entities.includes('OpenHand'));
+  assert.ok(out.summary.confidence > 0.5);
+  assert.ok(out.length > 0);
+
+  // And the LLMClient saw the usage record (proves the cost-tracker path).
+  assert.ok(client.costTracker.totalTokens > 0);
+});

@@ -109,6 +109,84 @@ every PR. Expect a first review within a working day.
 
 ---
 
+## Your first PR — a guided walkthrough
+
+If you've never opened a PR against this repo, here's the *exact* path that
+maintainers expect. Total wall time: about 15 minutes for a one-line fix,
+maybe 40 for a small plugin.
+
+### 1. Pick a `good first issue`
+
+Browse [open
+issues](https://github.com/ricardo-foundry/openhand/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22),
+or skim [`docs/GOOD_FIRST_ISSUES.md`](./GOOD_FIRST_ISSUES.md). Comment on
+the issue saying "I'll take this" so two people don't duplicate work. If
+maintainers don't reply within a day, just go ahead — we're a small team
+and we'd rather merge a PR than gate-keep an issue.
+
+### 2. Fork + clone + branch
+
+```bash
+gh repo fork ricardo-foundry/openhand --clone --remote
+cd openhand
+git checkout -b fix/<short-slug>     # or feat/, docs/, chore/
+```
+
+The branch name is purely convention — the labeler workflow keys off file
+paths, not branch names. We *don't* squash-merge by topic prefix.
+
+### 3. Code + verify locally
+
+```bash
+npm install
+# … edit files …
+npm run typecheck
+npm test
+```
+
+`npm test` runs the full 273-test grid in ~60s on a laptop. If you only
+changed a plugin, `npm run test:plugins` is enough for the inner loop;
+CI will run everything anyway.
+
+### 4. Commit with intent
+
+We follow [Conventional
+Commits](https://www.conventionalcommits.org/) loosely — the *type*
+matters (`feat`, `fix`, `docs`, `chore`, `refactor`, `test`), the scope
+is optional, the body is encouraged for any non-trivial change. One PR
+usually maps to one commit; don't be afraid to `git rebase -i` before
+pushing.
+
+```bash
+git add -p                 # review hunk-by-hunk; avoid `add -A`
+git commit -m "fix(plugins/calculator): handle Infinity/-Infinity"
+```
+
+### 5. Push + open the PR
+
+```bash
+git push -u origin fix/<short-slug>
+gh pr create --fill        # uses the PR template + last commit msg
+```
+
+Auto-labels land via `.github/labeler.yml`; a CODEOWNER review is
+auto-requested. Expect a first response within one working day.
+
+### 6. Iterate on review
+
+Push fixup commits to the same branch — the PR auto-updates. We squash
+on merge for plugins / docs / chores, and rebase on merge for
+`packages/*` so blame stays accurate. Reviewers pick the strategy; you
+don't need to rebase before merge unless asked.
+
+### 7. After merge
+
+Your name lands in the next CHANGELOG entry. If your PR touched
+`cookbook/` or `examples/`, the GitHub Pages site rebuilds automatically
+and links your new content from the landing page within ~2 minutes.
+
+---
+
 ## Where the maps live
 
 - [`README.md`](../README.md) — the elevator pitch.

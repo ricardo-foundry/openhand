@@ -99,7 +99,9 @@ function readLastCommit() {
 
 function main() {
   const tests = {
-    unit: countTestsIn(['packages', 'apps']),
+    // packages/apps own unit suites + any *.test.ts that lives next to a
+    // runnable example (examples/*.test.ts ships with the cookbook).
+    unit: countTestsIn(['packages', 'apps', 'examples']),
     e2e: countTestsIn(['tests/e2e']),
     integration: countTestsIn(['tests/integration']),
     plugins: countTestsIn(['plugins']),

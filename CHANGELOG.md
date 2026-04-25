@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-25
+
+### Added
+
+- **Cookbook 06 / 07.** Two new recipes wire end-to-end stories without a
+  framework:
+  - `cookbook/06-multi-agent-orchestration.md` — a *router* `LLMClient`
+    classifies the user request, a *worker* `LLMClient` answers in role.
+    ~80 lines, both clients backed by `MockProvider` so the recipe runs
+    offline. Lifted into the runnable `examples/router-worker.ts` plus a
+    5-test smoke (`examples/router-worker.test.ts`).
+  - `cookbook/07-streaming-tool-use.md` — drain `client.stream()`,
+    detect `finishReason: 'tool_calls'` on the terminal chunk, run the
+    tool, resume with appended `assistant` + `tool` messages. Lifted
+    into `examples/streaming-tool-use.ts`.
+- **Both new examples are gated by `tests/e2e/examples-runtime.test.ts`**
+  (now 7 cases) so the cookbook can never silently drift from the code.
+- **`plugins/web-scraper`.** Seventh in-tree plugin: SSRF-guarded fetch
+  + cheerio extract + LLM summary. Defence in depth — applies its own
+  SSRF check even though `@openhand/tools` already does. Now 17 tests
+  including a real-`MockProvider` end-to-end smoke that drives the
+  `scrape_summary` tool against an example.com fixture and asserts the
+  full chain (fetch → extract → LLMClient → JSON parse → cost record).
+- **Cookbook 02 walkthrough** for the `npm run plugin:new -- <name>`
+  scaffolder so a new plugin lands as a tested, manifest-shaped folder
+  in one command.
+- **`LLMClient.stream()` `onChunk` progress callback.** Default at the
+  client level, per-call override via `client.stream(req, { onChunk })`.
+  Errors thrown by the hook are swallowed so a buggy UI listener can
+  never abort the stream. 3 new unit tests.
+- **`PluginLoader.dispose()`.** Closes the file watcher, fires
+  `onDisable` + `onUninstall` on every plugin, evicts the `require`
+  cache, drops EventEmitter listeners. Idempotent and safe to call
+  before any `loadAll()`. 3 new unit tests.
+- **`scripts/setup-labels.sh`.** Idempotent `gh label create` script
+  that mirrors `.github/labeler.yml`. Fresh fork → `bash
+  scripts/setup-labels.sh` → all 15 labels exist on the remote with the
+  documented colours and descriptions.
+- **`docs/CONTRIBUTING_QUICKSTART.md` "first PR walkthrough"** — the
+  exact 7-step path from `good first issue` → fork → branch → commit →
+  push → PR → review, with the conventions we actually enforce.
+
+### Changed
+
+- **All workspace versions bumped to 0.6.0** (`package.json` root +
+  `packages/*` + `apps/*`). Lockfile re-resolved (`npm install`,
+  zero new external deps).
+- **`landing/build-meta.json` regenerated.** Test totals reflect the
+  new examples test (+2 e2e) and the new web-scraper smoke (+1 plugin).
+- **README + `docs/RELEASE_v0.5.md` cross-links** point at the v0.6
+  cookbook entries and the new examples.
+
+### Tests
+
+- **278+ total** (was 273). Breakdown:
+  - unit: 154 (unchanged)
+  - plugins: 61 (+1 from web-scraper real-MockProvider smoke)
+  - integration: 33 (unchanged)
+  - e2e: 18 (+2 from router-worker + streaming-tool-use runtime tests)
+  - bench: 10 (unchanged)
+  - examples (smoke): 5 (new file, but counted under unit by the test
+    grid since it lives next to the source).
+- `npm audit` still **0 vulnerabilities** — Round 13 added no new deps.
+
 ## [0.5.0] - 2026-04-25
 
 ### Added

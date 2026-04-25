@@ -1,20 +1,20 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T06:49:09.849Z",
+  "generatedAt": "2026-04-25T07:09:41.520Z",
   "lastCommit": {
-    "sha": "36af7f3efff7251c25701527bd19053dfafecfd6",
-    "shortSha": "36af7f3",
-    "subject": "chore: replace Ricardo-M-L URLs with ricardo-foundry across docs and badges",
-    "date": "2026-04-25T14:10:51+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/36af7f3efff7251c25701527bd19053dfafecfd6"
+    "sha": "38ca757bbcdb86e59dfb61432f50504ee059b99c",
+    "shortSha": "38ca757",
+    "subject": "feat(iter-12): cookbook 06/07, web-scraper plugin, runtime onChunk + dispose, scaffolder, in-browser demo",
+    "date": "2026-04-25T14:52:05+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/38ca757bbcdb86e59dfb61432f50504ee059b99c"
   },
   "tests": {
-    "unit": 154,
-    "e2e": 16,
+    "unit": 159,
+    "e2e": 18,
     "integration": 33,
-    "plugins": 60,
+    "plugins": 61,
     "bench": 10,
-    "total": 273
+    "total": 281
   },
   "audit": {
     "vulnerabilities": 0

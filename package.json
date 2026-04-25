@@ -1,6 +1,6 @@
 {
   "name": "openhand",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "🤖 OpenHand - 安全可控的 AI Agent 助手",
   "private": true,
   "workspaces": [
@@ -15,9 +15,10 @@
     "build": "npm run build --workspaces",
     "plugin:new": "node scripts/plugin-new.js",
     "ollama:check": "bash scripts/check-ollama.sh",
-    "test": "npm run test --workspaces && npm run test:plugins && npm run test:integration && npm run test:e2e && npm run bench",
+    "test": "npm run test --workspaces && npm run test:plugins && npm run test:examples && npm run test:integration && npm run test:e2e && npm run bench",
     "test:unit": "npm run test --workspaces",
     "test:plugins": "node --test plugins/*/tests/*.test.js",
+    "test:examples": "node --import tsx --test examples/*.test.ts",
     "test:integration": "node --import tsx --test tests/integration/provider-wire/*.test.ts",
     "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
     "test:smoke": "bash scripts/runtime-integration.sh",

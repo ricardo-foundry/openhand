@@ -95,3 +95,26 @@ test('example: rss-digest-agent.ts → runs even when offline', async () => {
   // the contract.
   assert.match(r.stdout, /\[rss\] feed=/);
 });
+
+test('example: router-worker.ts → router routes, worker replies', async () => {
+  const r = await runExample('router-worker.ts');
+  assert.equal(r.exitCode, 0, `stderr: ${r.stderr}`);
+  assert.equal(r.stderr, '');
+  assert.match(r.stdout, /\[router\]/);
+  assert.match(r.stdout, /\[worker: math \]/);
+  assert.match(r.stdout, /\*\*3\*\*/);
+  assert.match(r.stdout, /\[done\] router\/worker demo finished/);
+});
+
+test('example: streaming-tool-use.ts → drains chunks and prints final', async () => {
+  const r = await runExample('streaming-tool-use.ts');
+  assert.equal(r.exitCode, 0, `stderr: ${r.stderr}`);
+  assert.equal(r.stderr, '');
+  // Per-chunk onChunk hook writes the delta verbatim, then the [stream
+  // done, N chars] sentinel; finally the example logs its own [final] /
+  // [cost] / [done] lines.
+  assert.match(r.stdout, /\[stream done, \d+ chars\]/);
+  assert.match(r.stdout, /\[final\] \d+ chars/);
+  assert.match(r.stdout, /\[cost\] \d+ tokens/);
+  assert.match(r.stdout, /\[done\] streaming \+ tool-use demo finished/);
+});
