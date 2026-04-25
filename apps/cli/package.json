@@ -1,6 +1,6 @@
 {
   "name": "@openhand/cli",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "OpenHand CLI 客户端",
   "main": "dist/index.js",
   "bin": {

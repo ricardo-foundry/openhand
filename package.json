@@ -1,6 +1,6 @@
 {
   "name": "openhand",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "🤖 OpenHand - 安全可控的 AI Agent 助手",
   "private": true,
   "workspaces": [

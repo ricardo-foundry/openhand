@@ -1,6 +1,6 @@
 {
   "name": "@openhand/mcp",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Model Context Protocol (MCP) adapter for OpenHand — spawn-and-talk over stdio JSON-RPC.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T09:11:30.247Z",
+  "generatedAt": "2026-04-25T09:45:57.060Z",
   "lastCommit": {
-    "sha": "7d52e9c15d52526071eee46d83d0ab9018fe31e2",
-    "shortSha": "7d52e9c",
-    "subject": "feat(iter-19): MCP adapter — spawn-and-talk JSON-RPC over stdio (no SDK)",
-    "date": "2026-04-25T17:05:34+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/7d52e9c15d52526071eee46d83d0ab9018fe31e2"
+    "sha": "8c3ae893c1d49f39a8daf0fde1b1c0968d8110ac",
+    "shortSha": "8c3ae89",
+    "subject": "iter-23: merge-to-main bundle plan (docs only)",
+    "date": "2026-04-25T17:36:23+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/8c3ae893c1d49f39a8daf0fde1b1c0968d8110ac"
   },
   "tests": {
     "unit": 231,
