@@ -1,6 +1,6 @@
 {
   "name": "@openhand/server",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "OpenHand Web 服务端",
   "main": "dist/index.js",
   "scripts": {
@@ -10,9 +10,9 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@openhand/core": "1.0.0",
-    "@openhand/sandbox": "1.0.0",
-    "@openhand/tools": "1.0.0",
+    "@openhand/core": "*",
+    "@openhand/sandbox": "*",
+    "@openhand/tools": "*",
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "ws": "^8.14.2",

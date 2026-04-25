@@ -1,6 +1,6 @@
 {
   "name": "@openhand/tools",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "OpenHand 工具集合",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,8 +10,8 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@openhand/core": "1.0.0",
-    "@openhand/sandbox": "1.0.0",
+    "@openhand/core": "*",
+    "@openhand/sandbox": "*",
     "cheerio": "^1.0.0-rc.12"
   },
   "peerDependencies": {

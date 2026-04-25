@@ -1,6 +1,6 @@
 {
   "name": "@openhand/core",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "OpenHand 核心引擎",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

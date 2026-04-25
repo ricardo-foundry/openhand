@@ -1,6 +1,6 @@
 {
   "name": "@openhand/cli",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "OpenHand CLI 客户端",
   "main": "dist/index.js",
   "bin": {
@@ -14,9 +14,9 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "@openhand/core": "1.0.0",
-    "@openhand/sandbox": "1.0.0",
-    "@openhand/tools": "1.0.0",
+    "@openhand/core": "*",
+    "@openhand/sandbox": "*",
+    "@openhand/tools": "*",
     "commander": "^11.1.0",
     "chalk": "^4.1.2",
     "ora": "^5.4.1",

@@ -1,6 +1,6 @@
 {
   "name": "@openhand/llm",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "LLM provider abstraction for OpenHand",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
