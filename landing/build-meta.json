@@ -1,20 +1,20 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T07:37:58.237Z",
+  "generatedAt": "2026-04-25T07:55:31.610Z",
   "lastCommit": {
-    "sha": "5e6fd5351069112f4b6d632f71de2be5d28c6714",
-    "shortSha": "5e6fd53",
-    "subject": "feat(v0.7): observability spans + plugin marketplace + code-translator + doctor",
-    "date": "2026-04-25T15:37:47+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/5e6fd5351069112f4b6d632f71de2be5d28c6714"
+    "sha": "18de25857803b28f76fa260953d36f8ad07f5550",
+    "shortSha": "18de258",
+    "subject": "chore: regenerate landing/build-meta.json for v0.7 commit",
+    "date": "2026-04-25T15:38:12+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/18de25857803b28f76fa260953d36f8ad07f5550"
   },
   "tests": {
-    "unit": 178,
+    "unit": 214,
     "e2e": 18,
     "integration": 35,
     "plugins": 70,
     "bench": 10,
-    "total": 311
+    "total": 347
   },
   "audit": {
     "vulnerabilities": 0
