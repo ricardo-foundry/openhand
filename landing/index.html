@@ -9,7 +9,7 @@
   <meta property="og:title" content="OpenHand — LLM-agnostic agent runtime" />
   <meta property="og:description" content="Sandboxed by default. Plugin-first. Three providers in-box. MIT." />
   <meta property="og:image" content="./og-card.svg" />
-  <meta property="og:url" content="https://ricardo-m-l.github.io/openhand/" />
+  <meta property="og:url" content="https://ricardo-foundry.github.io/openhand/" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
 
@@ -189,7 +189,7 @@
       <a href="#architecture">Architecture</a>
       <a href="#quickstart">Quickstart</a>
       <a href="#cookbook">Cookbook</a>
-      <a href="https://github.com/Ricardo-M-L/openhand">GitHub →</a>
+      <a href="https://github.com/ricardo-foundry/openhand">GitHub →</a>
     </div>
   </div>
 </nav>
@@ -204,7 +204,7 @@
 
     <div class="badges">
       <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
-      <img src="https://img.shields.io/github/actions/workflow/status/Ricardo-M-L/openhand/ci.yml?label=CI" alt="CI status" />
+      <img src="https://img.shields.io/github/actions/workflow/status/ricardo-foundry/openhand/ci.yml?label=CI" alt="CI status" />
       <img src="https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white" alt="TypeScript" />
       <img src="https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white" alt="Node 20+" />
       <img src="https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white" alt="npm workspaces" />
@@ -216,7 +216,7 @@
 
     <div class="cta">
       <a class="btn primary" href="#quickstart">▶ 5-minute Quickstart</a>
-      <a class="btn ghost" href="https://github.com/Ricardo-M-L/openhand">Star on GitHub</a>
+      <a class="btn ghost" href="https://github.com/ricardo-foundry/openhand">Star on GitHub</a>
       <a class="btn ghost" href="#cookbook">Read the Cookbook</a>
     </div>
 
@@ -344,7 +344,7 @@ flowchart LR
     <div class="quickstart-grid">
       <div class="card">
         <h3>Local dev</h3>
-        <pre><code>git clone https://github.com/Ricardo-M-L/openhand.git
+        <pre><code>git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 cp .env.example .env
 npm install &amp;&amp; npm run build
@@ -352,7 +352,7 @@ npm run dev          # CLI + server + web</code></pre>
       </div>
       <div class="card">
         <h3>Docker</h3>
-        <pre><code>git clone https://github.com/Ricardo-M-L/openhand.git
+        <pre><code>git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 cp .env.example .env
 docker compose up --build
@@ -382,11 +382,11 @@ curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
     <h2>Cookbook</h2>
     <p class="muted">Five short recipes. Each one is &lt;400 words, code-first.</p>
     <div class="features">
-      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/01-hello-world.md">01 · Hello World</a></h3><p>Drive a real agent end-to-end with zero API keys via Ollama.</p></div>
-      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/02-writing-a-plugin.md">02 · Writing a plugin</a></h3><p>Ship a 60-line RSS plugin the agent can call.</p></div>
-      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/03-custom-llm-provider.md">03 · Custom LLM provider</a></h3><p>Point the LLM layer at any OpenAI-compatible local server.</p></div>
-      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/04-sandboxed-shell.md">04 · Sandboxed shell</a></h3><p>Watch the sandbox reject <code>rm -rf $HOME</code> at parse time.</p></div>
-      <div class="card"><h3><a href="https://github.com/Ricardo-M-L/openhand/blob/main/cookbook/05-streaming-ui.md">05 · Streaming UI</a></h3><p>Tail the SSE task stream from a 30-line React component.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/01-hello-world.md">01 · Hello World</a></h3><p>Drive a real agent end-to-end with zero API keys via Ollama.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/02-writing-a-plugin.md">02 · Writing a plugin</a></h3><p>Ship a 60-line RSS plugin the agent can call.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/03-custom-llm-provider.md">03 · Custom LLM provider</a></h3><p>Point the LLM layer at any OpenAI-compatible local server.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/04-sandboxed-shell.md">04 · Sandboxed shell</a></h3><p>Watch the sandbox reject <code>rm -rf $HOME</code> at parse time.</p></div>
+      <div class="card"><h3><a href="https://github.com/ricardo-foundry/openhand/blob/main/cookbook/05-streaming-ui.md">05 · Streaming UI</a></h3><p>Tail the SSE task stream from a 30-line React component.</p></div>
     </div>
   </div>
 </section>
@@ -394,9 +394,9 @@ curl -X POST http://localhost:3001/api/tasks/demo-1/_demo</code></pre>
 <footer>
   <div class="wrap">
     <p>
-      MIT-licensed · <a href="https://github.com/Ricardo-M-L/openhand">GitHub</a> ·
-      <a href="https://github.com/Ricardo-M-L/openhand/blob/main/CHANGELOG.md">Changelog</a> ·
-      <a href="https://github.com/Ricardo-M-L/openhand/issues/new/choose">Report an issue</a>
+      MIT-licensed · <a href="https://github.com/ricardo-foundry/openhand">GitHub</a> ·
+      <a href="https://github.com/ricardo-foundry/openhand/blob/main/CHANGELOG.md">Changelog</a> ·
+      <a href="https://github.com/ricardo-foundry/openhand/issues/new/choose">Report an issue</a>
     </p>
     <p>Built by humans who got tired of import-heavy meta-frameworks.</p>
   </div>

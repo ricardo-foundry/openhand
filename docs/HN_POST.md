@@ -2,7 +2,7 @@
 
 **Title:** `Show HN: OpenHand – an AI agent that earns its permissions`
 
-**URL:** `https://github.com/Ricardo-M-L/openhand`
+**URL:** `https://github.com/ricardo-foundry/openhand`
 
 **Body:**
 
@@ -53,6 +53,6 @@ command/path allow-list the right shape?), the plugin permission spec
 (should it be tighter / capability-based?), and the provider
 interface (is one `complete()` + one `stream()` enough?).
 
-Repo: https://github.com/Ricardo-M-L/openhand — MIT licensed.
+Repo: https://github.com/ricardo-foundry/openhand — MIT licensed.
 
 Happy to answer anything in the thread.

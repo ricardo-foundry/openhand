@@ -53,7 +53,7 @@ program
       '  openhand status            show provider + sandbox + plugins',
       '  openhand plugins list      enumerate every discovered plugin',
       '',
-      'Docs: https://github.com/Ricardo-M-L/openhand',
+      'Docs: https://github.com/ricardo-foundry/openhand',
     ].join('\n'),
   )
   .version('0.5.0');

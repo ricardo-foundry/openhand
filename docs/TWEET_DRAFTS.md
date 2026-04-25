@@ -9,7 +9,7 @@ Five launch tweets. Pick one per angle, schedule across a few days.
 > through a sandbox + permission check + approval queue.
 >
 > MIT, 160+ tests, zero runtime deps in the security packages.
-> github.com/Ricardo-M-L/openhand
+> github.com/ricardo-foundry/openhand
 
 ## 2 — Technical (strict TS + zero-dep monorepo)
 
@@ -18,7 +18,7 @@ Five launch tweets. Pick one per angle, schedule across a few days.
 > 0 runtime deps in `@openhand/llm` + `@openhand/sandbox`, and 160+
 > `node:test` tests. No Jest, no Vitest, no framework bingo.
 >
-> github.com/Ricardo-M-L/openhand
+> github.com/ricardo-foundry/openhand
 
 ## 3 — Security sandbox angle
 
@@ -28,7 +28,7 @@ Five launch tweets. Pick one per angle, schedule across a few days.
 > decision`), memory caps, wall-clock timeouts, a hard `SIGKILL` after
 > SIGTERM, and an approval queue for anything destructive.
 >
-> github.com/Ricardo-M-L/openhand
+> github.com/ricardo-foundry/openhand
 
 ## 4 — Monorepo / DX angle
 
@@ -37,7 +37,7 @@ Five launch tweets. Pick one per angle, schedule across a few days.
 > Ollama required. Mock provider ships in the box so you can verify
 > the whole pipeline end-to-end on a fresh clone.
 >
-> github.com/Ricardo-M-L/openhand
+> github.com/ricardo-foundry/openhand
 
 ## 5 — LLM-agnostic angle
 
@@ -46,4 +46,4 @@ Five launch tweets. Pick one per angle, schedule across a few days.
 > an env var. Your retry / rate-limit / cost-tracking code lives in
 > `LLMClient`, not in your provider.
 >
-> No vendor lock-in by design. github.com/Ricardo-M-L/openhand
+> No vendor lock-in by design. github.com/ricardo-foundry/openhand

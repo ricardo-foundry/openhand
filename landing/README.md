@@ -38,7 +38,7 @@ Open the repo on GitHub → **Settings → Pages** → **Source: GitHub Actions*
 That's it; no `gh-pages` branch needed.
 
 The site will publish at:
-`https://ricardo-m-l.github.io/openhand/`
+`https://ricardo-foundry.github.io/openhand/`
 
 Update the `og:url` in `index.html` if you change the deployment URL.
 

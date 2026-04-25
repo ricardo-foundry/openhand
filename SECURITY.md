@@ -20,7 +20,7 @@ fixes for six months.
 Use one of the following private channels:
 
 1. **GitHub Security Advisories** (preferred):
-   <https://github.com/Ricardo-M-L/openhand/security/advisories/new>
+   <https://github.com/ricardo-foundry/openhand/security/advisories/new>
 2. **Email**: `security@openhand.dev` (PGP key available on request).
 
 Please include:

@@ -8,7 +8,7 @@ Copy / paste into the GitHub "Settings" UI once, then forget it exists.
   > OpenHand — secure, LLM-agnostic AI agent in TypeScript. Sandboxed
   > shell, plug-in tools, works offline.
 
-- **Website**: `https://ricardo-m-l.github.io/openhand/`
+- **Website**: `https://ricardo-foundry.github.io/openhand/`
 - **Topics / tags**:
   `ai-agent`, `llm`, `typescript`, `sandbox`, `openai`, `anthropic`,
   `ollama`, `agent-framework`, `cli`, `plugins`, `sse`, `monorepo`,

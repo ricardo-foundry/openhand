@@ -35,7 +35,7 @@ More detail in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 ### First run
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand.git
+git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 cp .env.example .env      # fill in at least one LLM provider
 npm install               # installs all workspaces

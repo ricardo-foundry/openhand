@@ -8,7 +8,7 @@ five minutes. The longer policy doc is [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 ## 1. Clone + bootstrap (1 min)
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand.git
+git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 npm install
 ```

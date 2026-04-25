@@ -84,7 +84,7 @@ function readLastCommit() {
     const shortSha = sha.slice(0, 7);
     const subject = execFileSync('git', ['log', '-1', '--format=%s'], { cwd: root, encoding: 'utf-8' }).trim();
     const date = execFileSync('git', ['log', '-1', '--format=%cI'], { cwd: root, encoding: 'utf-8' }).trim();
-    const repo = process.env.GITHUB_REPOSITORY || 'Ricardo-M-L/openhand';
+    const repo = process.env.GITHUB_REPOSITORY || 'ricardo-foundry/openhand';
     return {
       sha,
       shortSha,
@@ -118,7 +118,7 @@ function main() {
       sha: '0000000', shortSha: '0000000',
       subject: '(no git context available)',
       date: new Date().toISOString(),
-      url: 'https://github.com/Ricardo-M-L/openhand',
+      url: 'https://github.com/ricardo-foundry/openhand',
     },
     tests,
     audit,

@@ -1,6 +1,6 @@
 # OpenHand: an AI agent that earns its permissions
 
-I've spent the last week building **[OpenHand](https://github.com/Ricardo-M-L/openhand)**,
+I've spent the last week building **[OpenHand](https://github.com/ricardo-foundry/openhand)**,
 an open-source AI agent that runs locally, is provider-agnostic, and —
 the part I care about most — treats every filesystem write, shell
 command, and network call as something it has to ask for, not something
@@ -60,7 +60,7 @@ node_modules. Three patterns kept showing up in every project I tried:
 ## Zero-setup demo
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand
+git clone https://github.com/ricardo-foundry/openhand
 cd openhand
 npm install
 npx tsx examples/hello-world.ts
@@ -77,5 +77,5 @@ task graph visualiser in the web UI, and a plugin registry. If the
 sandbox model or the plugin spec looks interesting to you, PRs welcome —
 `CONTRIBUTING.md` walks through the workspace layout.
 
-Source: **https://github.com/Ricardo-M-L/openhand**
+Source: **https://github.com/ricardo-foundry/openhand**
 MIT-licensed. Feedback, issues, and flames all appreciated.

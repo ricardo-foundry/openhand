@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions & Discussions
-    url: https://github.com/Ricardo-M-L/openhand/discussions
+    url: https://github.com/ricardo-foundry/openhand/discussions
     about: Ask a question, share ideas, or get help from the community.
   - name: Security vulnerability
-    url: https://github.com/Ricardo-M-L/openhand/security/advisories/new
+    url: https://github.com/ricardo-foundry/openhand/security/advisories/new
     about: Privately report a security issue. Please do not open a public issue.
   - name: Documentation
-    url: https://github.com/Ricardo-M-L/openhand/tree/main/docs
+    url: https://github.com/ricardo-foundry/openhand/tree/main/docs
     about: Browse the architecture, plugin, and security model docs.

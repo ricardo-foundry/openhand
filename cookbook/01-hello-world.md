@@ -12,7 +12,7 @@ ollama serve &              # starts http://localhost:11434
 ollama pull qwen2.5:0.5b    # ~400MB, runs on CPU
 
 # 2. Build the workspaces
-git clone https://github.com/Ricardo-M-L/openhand.git
+git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand && npm install && npm run build
 ```
 

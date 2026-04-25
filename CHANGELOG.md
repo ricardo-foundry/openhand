@@ -293,7 +293,7 @@ Strict TypeScript still clean on every workspace
 - `plugins/weather`: reference plugin demonstrating the plugin manifest + lifecycle.
 - Monorepo scaffolding via npm workspaces, TypeScript build, `node:test` harness.
 
-[Unreleased]: https://github.com/Ricardo-M-L/openhand/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/Ricardo-M-L/openhand/compare/v0.1.1...v0.2.0
-[0.1.1]: https://github.com/Ricardo-M-L/openhand/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/Ricardo-M-L/openhand/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ricardo-foundry/openhand/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ricardo-foundry/openhand/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/ricardo-foundry/openhand/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/ricardo-foundry/openhand/releases/tag/v0.1.0

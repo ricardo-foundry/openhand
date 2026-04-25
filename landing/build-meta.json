@@ -6,7 +6,7 @@
     "shortSha": "65a57ad",
     "subject": "qa(iter-9): runtime smoke for examples + CLI + server, drop inquirer regression",
     "date": "2026-04-25T13:47:32+08:00",
-    "url": "https://github.com/Ricardo-M-L/openhand/commit/65a57ada82615f0caef21bca7de9e78e839de387"
+    "url": "https://github.com/ricardo-foundry/openhand/commit/65a57ada82615f0caef21bca7de9e78e839de387"
   },
   "tests": {
     "unit": 149,

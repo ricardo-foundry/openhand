@@ -13,7 +13,7 @@
 **LLM-agnostic, plugin-first, sandboxed by default.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/Ricardo-M-L/openhand/ci.yml?label=CI&logo=githubactions&logoColor=white)](https://github.com/Ricardo-M-L/openhand/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/ricardo-foundry/openhand/ci.yml?label=CI&logo=githubactions&logoColor=white)](https://github.com/ricardo-foundry/openhand/actions/workflows/ci.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![TypeScript Strict](https://img.shields.io/badge/TS-strict%20%2B%20noUncheckedIndexedAccess-blue.svg?logo=typescript&logoColor=white)](./docs/ERROR_HANDLING.md)
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
@@ -23,9 +23,9 @@
 [![npm audit](https://img.shields.io/badge/npm%20audit-0%20vulns-success.svg)](./docs/RELEASE_v0.5.md)
 [![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
 [![Runtime smoke](https://img.shields.io/badge/runtime%20smoke-passing-success.svg)](./scripts/runtime-integration.sh)
-[![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/Ricardo-M-L/openhand/issues)
+[![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/ricardo-foundry/openhand/issues)
 
-[![Stars over time](https://starchart.cc/Ricardo-M-L/openhand.svg?variant=adaptive)](https://starchart.cc/Ricardo-M-L/openhand)
+[![Stars over time](https://starchart.cc/ricardo-foundry/openhand.svg?variant=adaptive)](https://starchart.cc/ricardo-foundry/openhand)
 
 </div>
 
@@ -61,7 +61,7 @@ Run everything with a single `npm test` from the root.
 ## ▶ 60-second Quickstart (zero setup)
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand.git && cd openhand
+git clone https://github.com/ricardo-foundry/openhand.git && cd openhand
 npm install
 npx tsx examples/hello-world.ts
 ```
@@ -206,7 +206,7 @@ boundary rules.
 ### Option A — Docker (web UI + server)
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand.git
+git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 cp .env.example .env                 # fill in at least one LLM key
 docker compose up --build
@@ -217,7 +217,7 @@ docker compose up --build
 ### Option B — Local dev (all workspaces)
 
 ```bash
-git clone https://github.com/Ricardo-M-L/openhand.git
+git clone https://github.com/ricardo-foundry/openhand.git
 cd openhand
 cp .env.example .env
 npm install && npm run build
@@ -349,7 +349,7 @@ Next:
 - [ ] **v1.0** — semver commitments, stable plugin API, published
       `@openhand/*` packages on npm.
 
-Propose or grab something via [good-first-issue](https://github.com/Ricardo-M-L/openhand/labels/good%20first%20issue).
+Propose or grab something via [good-first-issue](https://github.com/ricardo-foundry/openhand/labels/good%20first%20issue).
 
 ---
 

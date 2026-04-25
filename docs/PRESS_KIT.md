@@ -44,7 +44,7 @@ That shows up in four places:
 | Dimension              | Value                                               |
 |------------------------|-----------------------------------------------------|
 | License                | MIT                                                 |
-| Repo                   | https://github.com/Ricardo-M-L/openhand             |
+| Repo                   | https://github.com/ricardo-foundry/openhand             |
 | Tests                  | 160+ (`node:test`, no framework)                    |
 | Runtime deps           | 0 in `@openhand/llm`, `@openhand/sandbox`           |
 | Providers              | OpenAI, Anthropic, Ollama, Mock, custom             |
@@ -58,7 +58,7 @@ That shows up in four places:
 > permissioned tools, pluggable LLM providers (OpenAI / Anthropic /
 > Ollama / Mock), and zero runtime deps in the security packages.
 > 160+ tests, strict TS. Runs offline on first clone.
-> github.com/Ricardo-M-L/openhand
+> github.com/ricardo-foundry/openhand
 
 ## Quote
 
