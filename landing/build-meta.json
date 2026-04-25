@@ -1,25 +1,25 @@
 {
   "schema": 1,
-  "generatedAt": "2026-04-25T07:11:23.445Z",
+  "generatedAt": "2026-04-25T07:37:58.237Z",
   "lastCommit": {
-    "sha": "62ee54e8650a375b2424fb288f2486fbe0d83e17",
-    "shortSha": "62ee54e",
-    "subject": "chore(v0.6): runnable cookbook examples, label bootstrap, first-PR walkthrough",
-    "date": "2026-04-25T15:11:15+08:00",
-    "url": "https://github.com/ricardo-foundry/openhand/commit/62ee54e8650a375b2424fb288f2486fbe0d83e17"
+    "sha": "5e6fd5351069112f4b6d632f71de2be5d28c6714",
+    "shortSha": "5e6fd53",
+    "subject": "feat(v0.7): observability spans + plugin marketplace + code-translator + doctor",
+    "date": "2026-04-25T15:37:47+08:00",
+    "url": "https://github.com/ricardo-foundry/openhand/commit/5e6fd5351069112f4b6d632f71de2be5d28c6714"
   },
   "tests": {
-    "unit": 159,
+    "unit": 178,
     "e2e": 18,
-    "integration": 33,
-    "plugins": 61,
+    "integration": 35,
+    "plugins": 70,
     "bench": 10,
-    "total": 281
+    "total": 311
   },
   "audit": {
     "vulnerabilities": 0
   },
-  "plugins": 7,
+  "plugins": 8,
   "providers": [
     "openai",
     "anthropic",
