@@ -19,9 +19,10 @@
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Monorepo](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Tests](https://img.shields.io/badge/tests-140%20unit%20%2B%206%20e2e-success.svg)](./CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-140%20unit%20%2B%2016%20e2e-success.svg)](./CHANGELOG.md)
 [![npm audit](https://img.shields.io/badge/npm%20audit-0%20vulns-success.svg)](./docs/RELEASE_v0.5.md)
 [![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
+[![Runtime smoke](https://img.shields.io/badge/runtime%20smoke-passing-success.svg)](./scripts/runtime-integration.sh)
 [![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/Ricardo-M-L/openhand/issues)
 
 [![Stars over time](https://starchart.cc/Ricardo-M-L/openhand.svg?variant=adaptive)](https://starchart.cc/Ricardo-M-L/openhand)
@@ -41,8 +42,9 @@ in a weekend.
 | Axis | Status |
 | --- | --- |
 | Unit tests | **140** (`npm run test:unit`) |
-| End-to-end tests | **6** (`npm run test:e2e`) — SSE flow, CLI REPL, plugin hot-reload |
+| End-to-end tests | **16** (`npm run test:e2e`) — SSE flow, CLI REPL, CLI subcommand spawn, plugin hot-reload, examples runtime |
 | Micro-benchmarks | **10** (`npm run bench`) — LLMClient, plugin loader, SSE ring buffer |
+| Runtime smoke | **`scripts/runtime-integration.sh`** — build → unit → e2e → bench → examples → CLI → server (one shot, exit 0 on green) |
 | TypeScript | **`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride`** across every workspace, `tsc --noEmit` clean |
 | Dependencies in core runtime | **4** (`eventemitter3`, `uuid`, `express`, `cors`). Zero SDK deps. |
 | `npm audit` | **0 vulnerabilities** (as of v0.5) |
@@ -188,9 +190,10 @@ boundary rules.
 - **Live web task stream** — `GET /api/tasks/:id/stream` is a real SSE
   feed with `Last-Event-ID` resume and a per-task ring buffer.
 - **Monorepo with npm workspaces** — `packages/{core,tools,sandbox,llm}`
-  and `apps/{cli,server,web}`, each independently testable. **121 unit tests
-  + 6 E2E + 10 benchmarks** across seven workspaces, all under strict
-  TypeScript.
+  and `apps/{cli,server,web}`, each independently testable. **140 unit tests
+  + 16 E2E + 10 benchmarks** across seven workspaces, all under strict
+  TypeScript, plus a single-shot runtime smoke (`scripts/runtime-integration.sh`)
+  that exercises every example, every CLI subcommand, and the SSE flow.
 
 ---
 
