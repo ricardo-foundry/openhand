@@ -19,7 +19,7 @@ test(
   { skip: HAS_KEY ? false : 'ANTHROPIC_API_KEY not set — skipping live Anthropic smoke' },
   async () => {
     const provider = new AnthropicProvider({
-      apiKey: process.env.ANTHROPIC_API_KEY,
+      apiKey: process.env.ANTHROPIC_API_KEY ?? '',
       timeoutMs: 30_000,
     });
     const res = await provider.complete({

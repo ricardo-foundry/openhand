@@ -335,6 +335,51 @@ Full guide: [`docs/PLUGIN_DEVELOPMENT.md`](./docs/PLUGIN_DEVELOPMENT.md) and
 
 ---
 
+## Known limitations
+
+OpenHand aims to be useful out of the box, but some sharp edges are baked
+in by design. Surfacing them here so nobody is surprised in production.
+
+- **Single-process scope.** `LLMClient`'s rate limiter and `InMemoryCostTracker`
+  live in-process. If you scale horizontally (multiple pods, multiple
+  CLIs sharing one OpenAI quota), you must swap them for a shared store.
+  See [`README.md` § "LLMClient — scope and limits"](#llmclient--scope-and-limits).
+- **No OS-level sandbox isolation.** `SecureSandbox` enforces an
+  allowlist of commands + paths and a wallclock/memory budget, but it
+  runs the child process under the same UID as the host. For untrusted
+  code, run OpenHand inside the supplied Docker image (`Dockerfile.server`)
+  or your own container.
+- **Plugin code runs in the host process.** A malicious or buggy plugin
+  can do anything the host can do. The loader isolates *load-time*
+  failures (a broken plugin won't take down its neighbours, see
+  `tests/chaos/malformed-plugin.test.ts`) but it does not isolate
+  *runtime* misbehaviour. Use `openhand audit` and the policy engine to
+  gate what plugins are allowed to do.
+- **Streaming requests are not retried.** A retry mid-stream would
+  produce duplicate deltas and confuse the consumer. If your network
+  drops mid-stream, `LLMClient.stream()` raises and the caller decides
+  whether to redo the request.
+- **SSE backlog is bounded (200 events per task by default).** Late
+  subscribers replay the last `historyLimit` events; older events are
+  dropped silently. Bump `TaskStreamBus({ historyLimit })` if you need
+  longer replay windows.
+- **REPL is line-buffered, not character-buffered.** No tab-complete,
+  no key-binding remap. This is intentional — keeps the REPL zero-dep
+  and crash-resistant under random input (see
+  `tests/chaos/random-cli-input.test.ts`). If you want a richer terminal
+  UI, embed `runRepl` from `apps/cli/src/repl.ts` and bring your own
+  input layer.
+- **Built-in providers do not yet auto-stream tool calls.** The wire
+  format is supported, but `LLMClient.stream()` will deliver tool-call
+  deltas as a single chunk on the terminal frame for OpenAI and
+  Anthropic. Roadmap item for v0.4.
+- **No persistent state.** Sessions, tasks, and plugin enable/disable
+  bits live in memory. Restart = clean slate. If you need persistence,
+  capture events from the `Agent` EventEmitter and forward them to your
+  own store.
+
+---
+
 ## Roadmap
 
 Shipped:

@@ -22,7 +22,7 @@ test(
   { skip: HAS_KEY ? false : 'OPENAI_API_KEY not set — skipping live OpenAI smoke' },
   async () => {
     const provider = new OpenAIProvider({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY ?? '',
       timeoutMs: 30_000,
     });
     const res = await provider.complete({

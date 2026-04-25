@@ -8,14 +8,17 @@
 #   2. unit          — `npm run test:unit` across all packages.
 #   3. e2e           — REPL streams, SSE, plugin hot-reload, CLI subcommand
 #                      spawn, example execution.
-#   4. bench         — micro-benchmarks (must finish, not just the asserts).
-#   5. examples      — every `examples/*.ts` re-run as a smoke (belt + braces
+#   4. chaos         — random CLI input, malformed plugins, network failures,
+#                      SSE disconnects, 10MB payloads. Catches resource leaks
+#                      and graceful-exit regressions.
+#   5. bench         — micro-benchmarks (must finish, not just the asserts).
+#   6. examples      — every `examples/*.ts` re-run as a smoke (belt + braces
 #                      against the e2e runner: this lane is shell-only and
 #                      catches `tsx` resolution / shebang regressions that
 #                      slip past `node:test` spawning).
-#   6. cli           — spawn the CLI binary for `--help`, `--version`,
+#   7. cli           — spawn the CLI binary for `--help`, `--version`,
 #                      `status`, `plugins list`. Each must exit 0, no stderr.
-#   7. server        — boot the express server on an ephemeral port, hit
+#   8. server        — boot the express server on an ephemeral port, hit
 #                      `/api/health`, fire `_demo`, consume SSE until we see
 #                      a `completed` frame, then SIGTERM and assert clean
 #                      shutdown.
@@ -81,6 +84,11 @@ step e2e "npm run test:e2e"
 npm run test:e2e > "$LOG_DIR/e2e.log" 2>&1 || { tail -40 "$LOG_DIR/e2e.log"; fail "e2e"; }
 e2e_count=$(grep -E '^# tests ' "$LOG_DIR/e2e.log" | awk '{ s += $3 } END { print s }')
 ok "e2e (${e2e_count} tests)"
+
+step chaos "npm run test:chaos"
+npm run test:chaos > "$LOG_DIR/chaos.log" 2>&1 || { tail -40 "$LOG_DIR/chaos.log"; fail "chaos"; }
+chaos_count=$(grep -E '^# tests ' "$LOG_DIR/chaos.log" | awk '{ s += $3 } END { print s }')
+ok "chaos (${chaos_count} tests)"
 
 step bench "npm run bench"
 npm run bench > "$LOG_DIR/bench.log" 2>&1 || { tail -40 "$LOG_DIR/bench.log"; fail "bench"; }
@@ -170,6 +178,6 @@ wait "$SERVER_PID" 2>/dev/null || true
 trap - EXIT
 ok server
 
-total=$((unit_count + plugin_count + examples_test_count + integration_count + e2e_count + bench_count))
+total=$((unit_count + plugin_count + examples_test_count + integration_count + e2e_count + chaos_count + bench_count))
 printf '\n=== runtime-integration: PASS — %d tests + 7 examples + CLI + server ===\n' "$total"
 printf '    log dir: %s\n' "$LOG_DIR"
