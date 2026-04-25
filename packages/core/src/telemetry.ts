@@ -358,3 +358,270 @@ export const SPAN_AGENT_EXECUTE = 'agent.execute';
 export const SPAN_TOOL_INVOKE = 'tool.invoke';
 export const SPAN_LLM_COMPLETE = 'llm.complete';
 export const SPAN_PLUGIN_LOAD = 'plugin.load';
+
+// =====================================================================
+//  Metrics — counter + histogram, OTEL-shaped, zero-dependency.
+// =====================================================================
+//
+// Spans answer "what happened on this code path?". Metrics answer "how
+// often, and how slow?" — they're cheaper to keep, easier to alert on,
+// and the typical observability stack already speaks Counter / Histogram
+// natively. We model both, mirroring the OTEL Metrics API surface but
+// keeping the storage in-memory and synchronous.
+//
+// Counters are monotonic non-negative — `inc()` only goes up.
+// Histograms record a value into a bucket lattice (default OTEL buckets
+//   for milliseconds: 0, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000,
+//   10_000, +Inf). Total + sum + per-bucket count are kept.
+//
+// Both are tagged with the same string-only `Attributes` so we can group
+// by, e.g., `provider=openai` without exploding the cardinality with raw
+// numbers (string-only attributes is intentional — we want bounded
+// label sets).
+
+export type MetricAttributes = Readonly<Record<string, string>>;
+
+export type MetricKind = 'counter' | 'histogram';
+
+export interface MetricSnapshotBase {
+  name: string;
+  kind: MetricKind;
+  description?: string;
+  unit?: string;
+}
+
+export interface CounterSnapshot extends MetricSnapshotBase {
+  kind: 'counter';
+  /** One row per unique attribute combination. */
+  series: Array<{ attributes: MetricAttributes; value: number }>;
+}
+
+export interface HistogramSnapshot extends MetricSnapshotBase {
+  kind: 'histogram';
+  buckets: readonly number[];
+  series: Array<{
+    attributes: MetricAttributes;
+    count: number;
+    sum: number;
+    /** Cumulative bucket counts, parallel to `buckets`, with a final
+     *  +Inf bucket for values >= last threshold. */
+    bucketCounts: number[];
+  }>;
+}
+
+export type MetricSnapshot = CounterSnapshot | HistogramSnapshot;
+
+/** Stable canonicalisation of an attribute set — used as the series key. */
+function attrKey(attrs: MetricAttributes): string {
+  const keys = Object.keys(attrs).sort();
+  if (keys.length === 0) return '';
+  return keys.map(k => `${k}=${attrs[k]}`).join('|');
+}
+
+/** Default histogram buckets in milliseconds — close to the OTEL spec
+ *  default exponential bucket pattern. Frozen so callers can't mutate. */
+export const DEFAULT_HISTOGRAM_BUCKETS_MS: readonly number[] = Object.freeze([
+  0, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000,
+]);
+
+export interface CounterOptions {
+  description?: string;
+  unit?: string;
+}
+
+export interface HistogramOptions {
+  description?: string;
+  unit?: string;
+  /** Override the bucket lattice. Must be sorted ascending. */
+  buckets?: readonly number[];
+}
+
+export class Counter {
+  readonly name: string;
+  readonly description?: string;
+  readonly unit?: string;
+  private readonly series = new Map<string, { attributes: MetricAttributes; value: number }>();
+
+  constructor(name: string, opts: CounterOptions = {}) {
+    this.name = name;
+    if (opts.description !== undefined) this.description = opts.description;
+    if (opts.unit !== undefined) this.unit = opts.unit;
+  }
+
+  /** Increment by `delta` (default 1). Negative deltas are rejected. */
+  inc(delta: number = 1, attributes: MetricAttributes = {}): void {
+    if (!Number.isFinite(delta) || delta < 0) return;
+    const key = attrKey(attributes);
+    const cur = this.series.get(key);
+    if (cur) {
+      cur.value += delta;
+    } else {
+      this.series.set(key, { attributes: { ...attributes }, value: delta });
+    }
+  }
+
+  reset(): void {
+    this.series.clear();
+  }
+
+  snapshot(): CounterSnapshot {
+    return {
+      name: this.name,
+      kind: 'counter',
+      ...(this.description !== undefined ? { description: this.description } : {}),
+      ...(this.unit !== undefined ? { unit: this.unit } : {}),
+      series: Array.from(this.series.values()).map(s => ({
+        attributes: { ...s.attributes },
+        value: s.value,
+      })),
+    };
+  }
+}
+
+export class Histogram {
+  readonly name: string;
+  readonly description?: string;
+  readonly unit?: string;
+  readonly buckets: readonly number[];
+  private readonly series = new Map<
+    string,
+    { attributes: MetricAttributes; count: number; sum: number; bucketCounts: number[] }
+  >();
+
+  constructor(name: string, opts: HistogramOptions = {}) {
+    this.name = name;
+    if (opts.description !== undefined) this.description = opts.description;
+    if (opts.unit !== undefined) this.unit = opts.unit;
+    const raw = opts.buckets ?? DEFAULT_HISTOGRAM_BUCKETS_MS;
+    // Sanity: buckets must be sorted ascending. Sort defensively rather
+    // than throw — bad input shouldn't bring down the host process.
+    this.buckets = Object.freeze([...raw].sort((a, b) => a - b));
+  }
+
+  record(value: number, attributes: MetricAttributes = {}): void {
+    if (!Number.isFinite(value)) return;
+    const key = attrKey(attributes);
+    let cur = this.series.get(key);
+    if (!cur) {
+      cur = {
+        attributes: { ...attributes },
+        count: 0,
+        sum: 0,
+        // +1 for the implicit +Inf overflow bucket.
+        bucketCounts: new Array(this.buckets.length + 1).fill(0),
+      };
+      this.series.set(key, cur);
+    }
+    cur.count++;
+    cur.sum += value;
+    // Find the lowest bucket index whose threshold is >= value.
+    let placed = false;
+    for (let i = 0; i < this.buckets.length; i++) {
+      const threshold = this.buckets[i] ?? 0;
+      if (value <= threshold) {
+        // Cumulative bucketing — bump every bucket from `i` onward.
+        for (let j = i; j < cur.bucketCounts.length; j++) {
+          cur.bucketCounts[j] = (cur.bucketCounts[j] ?? 0) + 1;
+        }
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      // Overflow → only the +Inf bucket gets incremented.
+      const last = cur.bucketCounts.length - 1;
+      cur.bucketCounts[last] = (cur.bucketCounts[last] ?? 0) + 1;
+    }
+  }
+
+  reset(): void {
+    this.series.clear();
+  }
+
+  snapshot(): HistogramSnapshot {
+    return {
+      name: this.name,
+      kind: 'histogram',
+      ...(this.description !== undefined ? { description: this.description } : {}),
+      ...(this.unit !== undefined ? { unit: this.unit } : {}),
+      buckets: this.buckets,
+      series: Array.from(this.series.values()).map(s => ({
+        attributes: { ...s.attributes },
+        count: s.count,
+        sum: s.sum,
+        bucketCounts: [...s.bucketCounts],
+      })),
+    };
+  }
+}
+
+/**
+ * `Meter` is the registry. Use `meter.counter('name')` /
+ * `meter.histogram('name')` to look up or create an instrument by name —
+ * subsequent calls with the same name return the same instance.
+ *
+ * The whole registry is in-memory; callers wanting to ship metrics should
+ * call `snapshotAll()` on a tick (e.g. every 30s) and forward the result
+ * to a Prometheus pushgateway / OTLP / log line. We deliberately don't
+ * embed a push loop — that's a deployment concern.
+ */
+export class Meter {
+  private readonly counters = new Map<string, Counter>();
+  private readonly histograms = new Map<string, Histogram>();
+
+  counter(name: string, opts: CounterOptions = {}): Counter {
+    const existing = this.counters.get(name);
+    if (existing) return existing;
+    const c = new Counter(name, opts);
+    this.counters.set(name, c);
+    return c;
+  }
+
+  histogram(name: string, opts: HistogramOptions = {}): Histogram {
+    const existing = this.histograms.get(name);
+    if (existing) return existing;
+    const h = new Histogram(name, opts);
+    this.histograms.set(name, h);
+    return h;
+  }
+
+  snapshotAll(): MetricSnapshot[] {
+    const out: MetricSnapshot[] = [];
+    for (const c of this.counters.values()) out.push(c.snapshot());
+    for (const h of this.histograms.values()) out.push(h.snapshot());
+    return out;
+  }
+
+  reset(): void {
+    for (const c of this.counters.values()) c.reset();
+    for (const h of this.histograms.values()) h.reset();
+  }
+
+  /** Test helper: drop every instrument. Use sparingly. */
+  clearForTests(): void {
+    this.counters.clear();
+    this.histograms.clear();
+  }
+}
+
+let globalMeter: Meter | null = null;
+
+export function getMeter(): Meter {
+  if (!globalMeter) globalMeter = new Meter();
+  return globalMeter;
+}
+
+export function _resetMeterForTests(): void {
+  globalMeter = null;
+}
+
+// Reserved metric names — kept in lockstep with the span names so a
+// dashboard can correlate "agent.execute count" with "agent.execute
+// duration histogram".
+export const METRIC_AGENT_EXECUTE_COUNT = 'agent.execute.count';
+export const METRIC_AGENT_EXECUTE_DURATION_MS = 'agent.execute.duration_ms';
+export const METRIC_TOOL_INVOKE_COUNT = 'tool.invoke.count';
+export const METRIC_TOOL_INVOKE_DURATION_MS = 'tool.invoke.duration_ms';
+export const METRIC_LLM_COMPLETE_COUNT = 'llm.complete.count';
+export const METRIC_LLM_COMPLETE_DURATION_MS = 'llm.complete.duration_ms';
+export const METRIC_LLM_TOKENS = 'llm.tokens';

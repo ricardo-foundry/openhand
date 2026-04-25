@@ -22,6 +22,7 @@
     "test:integration": "node --import tsx --test tests/integration/provider-wire/*.test.ts tests/integration/*.test.ts",
     "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
     "test:smoke": "bash scripts/runtime-integration.sh",
+    "test:real": "node --import tsx --test tests/real/*.real.test.ts",
     "bench": "node --import tsx --test bench/*.bench.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "start": "cd apps/server && npm start",

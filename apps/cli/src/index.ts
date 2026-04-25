@@ -22,6 +22,7 @@ import {
   defaultResolveWorkspacePackage,
   defaultSandboxPaths,
 } from './commands/doctor';
+import { runAudit, type AuditablePlugin } from './commands/audit';
 import { loadConfig } from './repl';
 
 const program = new Command();
@@ -57,6 +58,7 @@ program
       '  openhand ask "…"           one-shot question, prints the reply',
       '  openhand status            show provider + sandbox + plugins',
       '  openhand doctor            diagnose Node, provider, sandbox, deps',
+      '  openhand audit             enumerate plugin scopes + risk scores',
       '  openhand plugins list      enumerate every discovered plugin',
       '',
       'Docs: https://github.com/ricardo-foundry/openhand',
@@ -195,6 +197,44 @@ program
         repoRoot,
         sandboxPaths: defaultSandboxPaths(),
         pluginCount,
+      },
+    );
+    process.exit(result.code);
+  });
+
+// Audit command — list every installed plugin's declared scopes + a
+// quick risk score. Read-only, never modifies the plugin set.
+program
+  .command('audit')
+  .description('Audit installed plugins: declared scopes + risk score per plugin (Markdown)')
+  .option('-o, --out <file>', 'Also write the Markdown report to <file>')
+  .action(async (options) => {
+    const pluginsDir = defaultPluginsDir();
+    const result = await runAudit(
+      {
+        ...(options.out !== undefined ? { outFile: options.out as string } : {}),
+        pluginsDir,
+      },
+      {
+        loadPlugins: async (): Promise<AuditablePlugin[]> => {
+          const loader = new PluginLoader({ pluginsDir });
+          try {
+            await loader.loadAll();
+          } catch {
+            /* keep audit informational — never crash */
+          }
+          return loader.listPlugins().map(p => ({
+            manifest: {
+              id: p.manifest.id,
+              version: p.manifest.version,
+              ...(p.manifest.description !== undefined ? { description: p.manifest.description } : {}),
+              ...(p.manifest.permissions !== undefined ? { permissions: p.manifest.permissions } : {}),
+            },
+            dir: p.dir,
+            enabled: p.enabled,
+            module: { tools: (p.module.tools ?? []).map(t => ({ name: t.name })) },
+          }));
+        },
       },
     );
     process.exit(result.code);

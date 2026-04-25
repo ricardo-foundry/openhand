@@ -7,6 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-04-25 (draft)
+
+### Added
+
+- **Real-provider smoke tests under `tests/real/`** — each is gated on the
+  presence of credentials / a reachable daemon and skipped otherwise:
+  - `tests/real/openai.real.test.ts` — runs only when `OPENAI_API_KEY`
+    is set; sends `Hello, return JSON {ok:true}` and asserts the reply
+    mentions `ok`. Model defaults to `gpt-4o-mini`, override via
+    `OPENAI_REAL_MODEL`.
+  - `tests/real/anthropic.real.test.ts` — same shape, gated on
+    `ANTHROPIC_API_KEY`. Defaults to `claude-3-5-haiku-latest`,
+    override via `ANTHROPIC_REAL_MODEL`.
+  - `tests/real/ollama.real.test.ts` — TCP-probes `localhost:11434`
+    inside the test (CJS-friendly — no top-level await) and skips if
+    Ollama isn't running. Defaults to `llama3.2:1b`, override via
+    `OLLAMA_REAL_MODEL`.
+  - **New `npm run test:real` script.** Default `npm test` does NOT
+    pick these up — only the explicit script does, so CI keeps its
+    fast hermetic budget while a contributor with a key can verify
+    the wire format against a live backend.
+- **Sandbox v2** — `packages/sandbox/src/v2.ts` (exported from
+  `@openhand/sandbox`). Three opt-in guards layered on top of v1:
+  - `wrapWithCpuLimit(cmd, args, ms)` — uses `timeout(1)` /
+    `gtimeout` from coreutils when on `PATH`. cgroup-v2 was rejected
+    as non-portable; v1's wallclock SIGKILL escalation still applies
+    when no `timeout` binary is present.
+  - `wrapWithMemoryLimit(cmd, args, mb)` — prefers `prlimit --as=`,
+    falls back to `sh -c 'ulimit -v <kb>; exec "$0" "$@"'`. Positional
+    args round-trip verbatim (test `wrapWithMemoryLimit: positional
+    args are NEVER fed through shell parsing` — adversarial
+    `"/tmp/oh; rm -rf /"` arg confirms it).
+  - `createNetGuardedFetch()` — fetch wrapper that rejects every call
+    with `NetworkBlockedError` when `NET=none` is set in the env.
+    Strict equality only — `NET=0` / `false` / `off` do NOT block.
+    Snapshot-at-construction so flipping the env mid-process can't
+    create racy half-isolation.
+- **`docs/SANDBOX_v2.md`** — design rationale, portability matrix,
+  end-to-end wrap-stack recipe, plus a "what v2 is NOT" section
+  pointing at Docker / Firecracker / nsjail for callers that need
+  real isolation.
+- **`openhand audit` CLI command.** Reads every installed plugin's
+  manifest `permissions` array, assigns each scope an additive risk
+  weight (`shell:exec` 8, `fs:write` 5, `network:http` 4,
+  `sandbox:bypass` 10, etc.), classifies the aggregate into
+  `low | medium | high`, and prints a Markdown report (Summary table
+  + per-plugin sections). Sorted highest-risk first. Read-only —
+  never modifies the plugin set. Optional `--out <file>` mirrors the
+  report to disk. Wired into `apps/cli/src/index.ts` next to
+  `doctor`.
+- **Metrics in `packages/core/src/telemetry.ts`.** `Counter` and
+  `Histogram` types alongside the existing span model. Both keyed
+  by name + string-only `MetricAttributes` (string-only on purpose —
+  bounded label cardinality). Histogram buckets default to OTEL-style
+  millisecond lattice (`0, 5, 10, 25, 50, 100, 250, 500, 1000, 2500,
+  5000, 10_000`) with cumulative counts + a `+Inf` overflow. New
+  `Meter` registry singleton via `getMeter()`. Reserved metric names
+  exported as constants: `agent.execute.count`, `tool.invoke.count`,
+  `llm.complete.duration_ms`, `llm.tokens`. **No background push
+  loop** — that's a deployment concern; callers `snapshotAll()` on a
+  tick and forward.
+- **`scripts/demo-walkthrough.sh`** — captures a real CLI run of
+  `init → status → plugins list → audit → doctor → chat (/help, /exit)`
+  into `docs/DEMO.md`. Hermetic: points `OPENHAND_HOME` at a temp
+  directory and uses `LLM_PROVIDER=mock` so there is zero network
+  and the user's real `~/.openhand` is untouched. Re-runnable so CI
+  can diff for drift.
+- **`docs/DEMO.md`** — first generated walkthrough, checked in.
+
+### Changed
+
+- **`apps/cli/src/index.ts`** — top-level help block now lists
+  `openhand audit`. Imports `runAudit` and registers the command
+  next to `doctor`.
+- **`packages/sandbox/src/index.ts`** — re-exports `v2.ts`.
+
+### Tests
+
+- **Total ≥ 311 retained**; v0.8 adds:
+  - **+13 metrics tests** (`packages/core/tests/metrics.test.ts`).
+  - **+13 sandbox-v2 tests** (`packages/sandbox/tests/v2.test.ts`).
+  - **+10 audit tests** (`apps/cli/tests/audit.test.ts`).
+  - **+3 real-provider smoke** (`tests/real/*.real.test.ts`) — these
+    only count under `npm run test:real`, not the default grid.
+- `npm audit` still **0 vulnerabilities** — Round 15 added zero new
+  runtime deps. Pure stdlib + existing devDeps.
+
 ## [0.7.0] - 2026-04-25
 
 ### Added
@@ -420,7 +507,8 @@ Strict TypeScript still clean on every workspace
 - `plugins/weather`: reference plugin demonstrating the plugin manifest + lifecycle.
 - Monorepo scaffolding via npm workspaces, TypeScript build, `node:test` harness.
 
-[Unreleased]: https://github.com/ricardo-foundry/openhand/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/ricardo-foundry/openhand/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/ricardo-foundry/openhand/compare/v0.7.0...v0.8.0
 [0.2.0]: https://github.com/ricardo-foundry/openhand/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/ricardo-foundry/openhand/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ricardo-foundry/openhand/releases/tag/v0.1.0

@@ -19,3 +19,6 @@ build/
 .vscode/
 *.swp
 *~
+# Project-local OpenHand config written by `openhand init`. Never commit
+# real configs — they may contain provider API keys.
+.openhand/
