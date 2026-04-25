@@ -19,11 +19,12 @@
 [![Node](https://img.shields.io/badge/Node-%3E%3D20-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org)
 [![Monorepo](https://img.shields.io/badge/npm-workspaces-cb3837.svg?logo=npm&logoColor=white)](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](./docker-compose.yml)
-[![Tests](https://img.shields.io/badge/tests-383%2B-success.svg)](./CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-406%2B-success.svg)](./CHANGELOG.md)
 [![npm audit](https://img.shields.io/badge/npm%20audit-0%20vulns-success.svg)](./CHANGELOG.md#070---2026-04-25)
-[![Plugins](https://img.shields.io/badge/plugins-8%20in--tree-blue.svg)](./plugins)
+[![Plugins](https://img.shields.io/badge/plugins-9%20in--tree-blue.svg)](./plugins)
 [![Providers](https://img.shields.io/badge/providers-openai%20%7C%20anthropic%20%7C%20ollama%20%7C%20mock-blue.svg)](./packages/llm/src)
-[![Cookbook](https://img.shields.io/badge/cookbook-7%20recipes-blue.svg)](./cookbook)
+[![Cookbook](https://img.shields.io/badge/cookbook-8%20recipes-blue.svg)](./cookbook)
+[![MCP](https://img.shields.io/badge/MCP-adapter-9333ea.svg)](./packages/mcp)
 [![Benchmarks](https://img.shields.io/badge/bench-10%20passing-success.svg)](./bench/README.md)
 [![Runtime smoke](https://img.shields.io/badge/runtime%20smoke-passing-success.svg)](./scripts/runtime-integration.sh)
 [![Issues welcome](https://img.shields.io/badge/issues-welcome-brightgreen.svg)](https://github.com/ricardo-foundry/openhand/issues)
@@ -44,14 +45,14 @@ in a weekend.
 
 | Axis | Status |
 | --- | --- |
-| Unit tests | **209** (`npm run test:unit`) — packages/* + apps/*, includes telemetry + doctor + audit |
-| Plugin tests | **70** (`npm run test:plugins`) — eight in-tree plugins, each with a `tests/` folder |
+| Unit tests | **226** (`npm run test:unit`) — packages/* + apps/*, includes telemetry + doctor + audit + new MCP adapter (17, JSON-RPC framing + spawn-and-talk client + schema mapping; mock server spawned via `node -e`) |
+| Plugin tests | **76** (`npm run test:plugins`) — nine in-tree plugins (incl. `mcp-bridge`), each with a `tests/` folder |
 | Example tests | **5** (`npm run test:examples`) — runnable cookbook code, asserted by `node:test` |
 | Integration tests | **35** (`npm run test:integration`) — provider wire-format (OpenAI / Anthropic / Ollama) + full-agent-flow (server + CLI + SSE) |
 | End-to-end tests | **18** (`npm run test:e2e`) — SSE flow, CLI REPL, CLI subcommand spawn, plugin hot-reload, examples runtime (incl. router-worker + streaming-tool-use) |
 | Chaos tests | **36** (`npm run test:chaos`) — adversarial: SIGKILL escalation, truncated SSE frames, plugin cycles, shell injection, `NET=none` flips |
 | Micro-benchmarks | **10** (`npm run bench`) — LLMClient, plugin loader, SSE ring buffer |
-| Total exercised | **383** (single `npm test` from the root) |
+| Total exercised | **406** (single `npm test` from the root) |
 | Runtime smoke | **`scripts/runtime-integration.sh`** — build → unit → e2e → bench → examples → CLI → server (one shot, exit 0 on green) |
 | TypeScript | **`strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride`** across every workspace, `tsc --noEmit` clean |
 | Dependencies in core runtime | **4** (`eventemitter3`, `uuid`, `express`, `cors`). Zero SDK deps. |
@@ -96,6 +97,7 @@ zero-setup run.
 | Stream task events into a React app         | [`cookbook/05-streaming-ui.md`](./cookbook/05-streaming-ui.md)   |
 | Wire a router → worker multi-agent flow     | [`cookbook/06-multi-agent-orchestration.md`](./cookbook/06-multi-agent-orchestration.md) |
 | Stream + tool-use end to end                | [`cookbook/07-streaming-tool-use.md`](./cookbook/07-streaming-tool-use.md) |
+| Bridge an MCP server into the agent         | [`cookbook/08-mcp-integration.md`](./cookbook/08-mcp-integration.md) |
 | See a mini agent loop (chat → exec → observe) | [`examples/agent-shell-loop.ts`](./examples/agent-shell-loop.ts) |
 | Read a full recorded transcript             | [`docs/demo-transcript.md`](./docs/demo-transcript.md)           |
 | Read every recipe                           | [`cookbook/README.md`](./cookbook/README.md)                     |

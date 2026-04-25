@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-mcp-bridge",
+  "version": "1.0.0",
+  "description": "Spawn an MCP server and expose its tools as OpenHand tools.",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "mcp", "anthropic", "model-context-protocol"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "mcp-bridge",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Bridge an external Model Context Protocol server's tools into OpenHand.",
+    "permissions": ["mcp:invoke", "process:spawn"]
+  }
+}

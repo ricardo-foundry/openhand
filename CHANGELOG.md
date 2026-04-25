@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **MCP (Model Context Protocol) adapter** — new `@openhand/mcp`
+  workspace at `packages/mcp/`. Spawn-and-talk style: `MCPClient`
+  spawns an MCP server as a child process, performs the JSON-RPC 2.0
+  `initialize` handshake over line-delimited JSON on stdio, and
+  exposes `listTools()` / `callTool(name, args)`. Companion
+  `bridgeMcpTools(client, opts?)` returns a `Map<string, Tool>`
+  ready to merge into `createTools()` output — every MCP tool
+  becomes a first-class OpenHand `Tool` with parameters derived
+  from the server's JSON Schema. **Zero runtime deps** — does not
+  pull in `@modelcontextprotocol/sdk`; the JSON-RPC framing is
+  ~120 lines of TS in `packages/mcp/src/jsonrpc.ts`. v0.8 covers
+  `initialize` + `tools/list` + `tools/call`; resources, prompts,
+  and sampling are out of scope. HTTP/SSE transport is also out of
+  scope (stdio only). Per-call timeout default 30 s, escalates
+  `SIGTERM` → `SIGKILL` after 2 s on `stop()`. **17 package tests**
+  use a mock MCP server spawned via `node -e <script>` so the suite
+  is fully hermetic — no fixture binaries, no separate process.
+- **`plugins/mcp-bridge/`** — ninth in-tree plugin. Wraps the
+  adapter as a single dispatcher (`mcp_list_tools`, `mcp_call`)
+  for users who want runtime-selectable MCP servers instead of
+  expanding every MCP tool into the agent's tool list. Plain
+  CommonJS, no workspace imports — copy-pasteable into any project.
+  Six test cases include configure → list → call → error
+  propagation → onDisable cleanup.
+- **`examples/mcp-demo.ts`** — end-to-end runnable demo. Spawns an
+  inline mock MCP server, bridges its `reverse` + `upper` tools,
+  calls each, then cleanly shuts the child down. No network, no
+  API key. Run via `npx tsx examples/mcp-demo.ts`.
+- **`cookbook/08-mcp-integration.md`** — recipe explaining when to
+  pick the package adapter vs. the plugin, the supported subset of
+  the protocol, and the `node -e` mock-server testing trick.
 - **Real-provider smoke tests under `tests/real/`** — each is gated on the
   presence of credentials / a reachable daemon and skipped otherwise:
   - `tests/real/openai.real.test.ts` — runs only when `OPENAI_API_KEY`

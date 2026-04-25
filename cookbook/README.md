@@ -15,6 +15,7 @@ If you only have time to read one, read **[01-hello-world](./01-hello-world.md)*
 | 05 | [Streaming UI](./05-streaming-ui.md)                            | Tail the SSE task stream from a 30-line React component.          | 10 min   |
 | 06 | [Multi-agent orchestration](./06-multi-agent-orchestration.md)  | Router + worker agents in ~80 lines using `core` + `llm`.         | 15 min   |
 | 07 | [Streaming + tool use](./07-streaming-tool-use.md)              | Drain `stream()` and run tools mid-flight without buffering.      | 15 min   |
+| 08 | [MCP integration](./08-mcp-integration.md)                      | Bridge any Model Context Protocol server's tools into OpenHand.   | 10 min   |
 
 ## Companion runnables (no separate write-up yet)
 

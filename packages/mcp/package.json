@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/mcp",
+  "version": "0.7.0",
+  "description": "Model Context Protocol (MCP) adapter for OpenHand — spawn-and-talk over stdio JSON-RPC.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --import tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@openhand/core": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}
