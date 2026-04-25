@@ -1,6 +1,6 @@
 {
   "name": "@openhand/sandbox",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "OpenHand 安全沙箱系统",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

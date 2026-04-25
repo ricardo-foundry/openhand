@@ -1,0 +1,19 @@
+{
+  "name": "@openhand/plugin-code-translator",
+  "version": "1.0.0",
+  "description": "Translate code between languages via the host LLM, with secret-leak heuristics",
+  "main": "index.js",
+  "keywords": ["openhand", "plugin", "translator", "code"],
+  "author": "OpenHand Community",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "openhand": {
+    "id": "code-translator",
+    "version": "1.0.0",
+    "entry": "./index.js",
+    "description": "Translate a code snippet from one language to another using the host LLM",
+    "permissions": ["llm:complete"]
+  }
+}

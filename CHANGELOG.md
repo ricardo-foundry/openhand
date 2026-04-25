@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-04-25
+
+### Added
+
+- **Telemetry (zero-dependency, OTEL-shaped).**
+  `packages/core/src/telemetry.ts` — `Tracer`, `SpanHandle`, `Exporter`,
+  plus `withSpan(name, fn)` for the common case. Reserved span names:
+  `agent.execute`, `tool.invoke`, `llm.complete`, `plugin.load`. Wires up
+  via `OTEL_EXPORTER=stdout` (one JSON line per span) or
+  `OTEL_EXPORTER=file:<path>` (append-mode). Unknown values resolve to noop —
+  fail-closed so a typo never silently leaks spans. 11 unit tests across
+  start/end/error paths, env parsing, file exporter round-trip, singleton
+  reset.
+- **`docs/OBSERVABILITY.md`** — quickstart, span model, attribute
+  conventions, custom-exporter recipe, OTEL-SDK adapter notes.
+- **`docs/PLUGIN_MARKETPLACE.md`** — how to submit a plugin to the official
+  index: submission flow, naming conventions, MUST/MUST-NOT lists, security
+  audit checklist (network / fs / shell / LLM scopes), worked example
+  using `code-translator`.
+- **`plugins/code-translator/`** — eighth in-tree plugin. Translates code
+  between 8 languages (python, javascript, typescript, go, rust, java, ruby,
+  csharp + aliases) via the host LLM. Refuses sources that match a secret
+  heuristic (OpenAI / AWS / GitHub / Slack / Stripe tokens, PEM blocks,
+  `API_KEY=` / `SECRET=` / `PASSWORD=` assignments) **before** any LLM call —
+  defence in depth at the plugin boundary. 9 tests covering manifest, alias
+  resolution, fence stripping, secret scan on real tokens, secret scan on
+  assignment forms, happy-path translation, refusal-without-LLM-call,
+  input validation, and the standalone `code_scan_secrets` tool.
+- **`openhand doctor`.** Diagnoses Node version (>= 20), provider
+  configuration (api key set/unset, model resolved), sandbox paths, and
+  dependency integrity (node_modules + workspace pkgs resolvable). Prints
+  a Markdown report; `--out <file>` also writes it. Exits 1 on any FAIL,
+  0 on warns/ok. 9 unit tests.
+- **`tests/integration/full-agent-flow.test.ts`.** Spawns the real Express
+  server, opens an SSE web client over raw `http.request`, spawns the CLI
+  binary via `tsx` in parallel, fires the demo task, and asserts: (a) SSE
+  receives ≥4 frames ending in `status:"completed"`, (b) CLI exits 0 with a
+  semver on stdout, (c) backlog replay works for late-arriving clients.
+  2 cases.
+
+### Changed
+
+- **All workspace versions bumped to 0.7.0** (`package.json` root +
+  `packages/*` + `apps/*`). Lockfile re-resolved (`npm install`,
+  zero new external deps).
+- **`test:integration` script** now also picks up `tests/integration/*.test.ts`
+  (was provider-wire only).
+- **`landing/build-meta.json` regenerated** to reflect the new commit and
+  test totals.
+- **CLI `--version`** now reports `0.7.0`; the boxed banner reads `v0.7.0`;
+  `openhand doctor` is listed in the help-summary preamble.
+
+### Tests
+
+- **311 total** (was 281). Breakdown:
+  - unit: 173 (+14 from telemetry + doctor)
+  - plugins: 70 (+9 from code-translator)
+  - integration: 35 (+2 from full-agent-flow)
+  - e2e: 18 (unchanged)
+  - examples: 5 (unchanged)
+  - bench: 10 (unchanged)
+- `npm audit` still **0 vulnerabilities** — Round 14 added no new deps.
+
 ## [0.6.0] - 2026-04-25
 
 ### Added

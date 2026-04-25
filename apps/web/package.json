@@ -1,6 +1,6 @@
 {
   "name": "@openhand/web",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "OpenHand Web 界面",
   "type": "module",
   "scripts": {

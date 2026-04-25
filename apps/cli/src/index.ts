@@ -17,6 +17,11 @@ import {
   type PluginsSubcommand,
 } from './commands/plugins';
 import { renderStatus } from './commands/status';
+import {
+  runDoctor,
+  defaultResolveWorkspacePackage,
+  defaultSandboxPaths,
+} from './commands/doctor';
 import { loadConfig } from './repl';
 
 const program = new Command();
@@ -31,7 +36,7 @@ const logo = `
 
 console.log(chalk.cyan(logo));
 console.log(boxen(
-  chalk.white('🤖 OpenHand CLI v0.5.0') + '\n' +
+  chalk.white('🤖 OpenHand CLI v0.7.0') + '\n' +
   chalk.gray('Your secure AI assistant in the terminal'),
   {
     padding: 1,
@@ -51,12 +56,13 @@ program
       '  openhand chat              interactive REPL (/help inside for slash commands)',
       '  openhand ask "…"           one-shot question, prints the reply',
       '  openhand status            show provider + sandbox + plugins',
+      '  openhand doctor            diagnose Node, provider, sandbox, deps',
       '  openhand plugins list      enumerate every discovered plugin',
       '',
       'Docs: https://github.com/ricardo-foundry/openhand',
     ].join('\n'),
   )
-  .version('0.5.0');
+  .version('0.7.0');
 
 // Init command — drop a project-local .openhand/config.json and walk the
 // user through provider selection. Separate from `config --setup` (global).
@@ -165,6 +171,33 @@ program
       plugins,
     });
     process.stdout.write(out);
+  });
+
+// Doctor command
+program
+  .command('doctor')
+  .description('Diagnose the local environment (Node, provider, sandbox, deps) and emit Markdown')
+  .option('-o, --out <file>', 'Also write the Markdown report to <file>')
+  .action(async (options) => {
+    const repoRoot = process.cwd();
+    const pluginsDir = defaultPluginsDir();
+    const loader = new PluginLoader({ pluginsDir });
+    let pluginCount = 0;
+    try {
+      await loader.loadAll();
+      pluginCount = loader.listPlugins().length;
+    } catch { /* keep doctor diagnostic-only — don't crash */ }
+    const result = await runDoctor(
+      { ...(options.out !== undefined ? { outFile: options.out as string } : {}) },
+      {
+        loadConfig,
+        resolveWorkspacePackage: defaultResolveWorkspacePackage,
+        repoRoot,
+        sandboxPaths: defaultSandboxPaths(),
+        pluginCount,
+      },
+    );
+    process.exit(result.code);
   });
 
 // Quick commands
