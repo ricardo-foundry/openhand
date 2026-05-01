@@ -60,7 +60,7 @@ jobs:
           cp -R docs/api/* _site/api/
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
