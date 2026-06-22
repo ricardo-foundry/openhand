@@ -10,7 +10,7 @@
     "test": "node --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
-    "uuid": "^14.0.0",
+    "uuid": "^14.0.1",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
