@@ -42,9 +42,9 @@
   "author": "OpenHand Team",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "tsx": "^4.7.0",
+    "concurrently": "^10.0.3",
+    "tsx": "^4.22.4",
     "typedoc": "^0.28.19",
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.3"
   }
 }
